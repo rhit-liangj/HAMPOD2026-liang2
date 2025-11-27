@@ -26,17 +26,31 @@ git clone https://github.com/waynepadgett/HAMPOD2026.git
 
 ### Deployment Workflow
 
-1.  **Local Machine:** Commit and push your changes to GitHub.
-    ```bash
-    git add .
-    git commit -m "Your commit message"
-    git push origin main
-    ```
+#### Step 1: Commit and Push from Local Machine
 
-2.  **Raspberry Pi:** Pull the changes.
-    ```bash
-    ssh waynesr@HAMPOD.local
-    cd ~/HAMPOD2026
-    git pull origin main
-    ```
+On your local machine (Windows), commit and push your changes to GitHub:
+```bash
+git add .
+git commit -m "Your commit message"
+git push origin main
+```
+
+#### Step 2: Sync to Raspberry Pi
+
+You have two options to pull the latest changes on the Pi:
+
+**Option A: One-liner (Recommended)**
+```bash
+ssh waynesr@HAMPOD.local "cd ~/HAMPOD2026 && git pull origin main"
+```
+
+**Option B: Interactive SSH**
+```bash
+ssh waynesr@HAMPOD.local
+cd ~/HAMPOD2026
+git pull origin main
+exit
+```
+
+Both options achieve the same result. Option A is faster for quick syncs.
 
