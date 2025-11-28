@@ -21,6 +21,13 @@
 /* File descriptor for keypad device */
 static int keypad_fd = -1;
 
+/* Debouncing state for '00' key */
+static struct {
+    int last_key;
+    struct timeval last_time;
+    int suppress_next;
+} debounce_state = {-1, {0, 0}, 0};
+
 /* Keycode to HAMPOD symbol mapping table */
 static const struct {
     int keycode;
@@ -47,6 +54,8 @@ static const struct {
     /* Special keys */
     {KEY_KPENTER, '#'},      /* ENTER → # */
     {KEY_KPDOT, '*'},        /* . (DEL) → * (alternative mapping) */
+    {KEY_NUMLOCK, 'X'},      /* NUM_LOCK → X */
+    {KEY_BACKSPACE, 'Y'},    /* BACKSPACE → Y */
     
     /* End of table marker */
     {-1, '\0'}
@@ -134,6 +143,27 @@ KeypadEvent hal_keypad_read(void) {
     if (bytes_read == sizeof(ev)) {
         /* We only care about key press events */
         if (ev.type == EV_KEY && ev.value == 1) {  /* 1 = key press */
+            
+            /* Handle '00' key debouncing */
+            /* The '00' key on many keypads sends two KEY_KP0 events rapidly */
+            /* We suppress the second one if it comes within 50ms of the first */
+            if (ev.code == KEY_KP0 && debounce_state.last_key == KEY_KP0) {
+                /* Calculate time difference in microseconds */
+                long time_diff = (ev.time.tv_sec - debounce_state.last_time.tv_sec) * 1000000L +
+                                (ev.time.tv_usec - debounce_state.last_time.tv_usec);
+                
+                /* If within 50ms (50000 microseconds), suppress this event */
+                if (time_diff < 50000) {
+                    /* Return invalid event to suppress this duplicate '0' */
+                    return event;
+                }
+            }
+            
+            /* Store this event for next debounce check */
+            debounce_state.last_key = ev.code;
+            debounce_state.last_time = ev.time;
+            
+            /* Map the keycode to symbol */
             event.raw_code = ev.code;
             event.key = map_keycode_to_symbol(ev.code);
             event.valid = (event.key != '-') ? 1 : 0;
