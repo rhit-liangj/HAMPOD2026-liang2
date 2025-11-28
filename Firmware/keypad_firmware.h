@@ -5,7 +5,6 @@
 #ifndef KEYPAD_CODE
 #define KEYPAD_CODE
 
-#include <wiringPi.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,14 +20,6 @@
 
 #define KEYPAD_O "Keypad_o"
 #define KEYPAD_I "Keypad_i"
-#define R1 0 //Pin GPIOA0
-#define R2 10 //Pin GPIOC3
-#define R3 6 //Pin GPIOA1
-#define R4 1 //Pin GPIOA6
-#define C1 14 //Pin GPIOC2
-#define C2 13 //Pin GPIOC1
-#define C3 12 //Pin GPIOC0
-#define C4 3 //Pin GPIOA3
 
 #define KEYPAD_THREAD_COLOR "\033[0;97mKeypad - Main: "
 #define KEYPAD_IO_THREAD_COLOR "\033[0;96mKeypad - IO: "
