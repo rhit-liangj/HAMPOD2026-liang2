@@ -179,7 +179,7 @@ void firmwareStartAudio(){
     }
 }
 
-void* firmwarePlayAudio(void* text){
+int firmwarePlayAudio(void* text){
     char* incomingText = (char*) text;
     char* buffer = malloc(sizeof(char)*(2*strlen(incomingText)+100+1));
     char audio_type_byte = incomingText[0];

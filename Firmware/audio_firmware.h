@@ -58,7 +58,7 @@ typedef struct audio_io_packet {
 void audio_process();
 void *audio_io_thread(void* arg);
 void firmwareStartAudio();
-void* firmwarePlayAudio(void* text);
+int firmwarePlayAudio(void* text);
 #ifndef SHAREDLIB
 #include "audio_firmware.c"
 #endif
