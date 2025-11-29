@@ -126,7 +126,7 @@ int hal_audio_play_file(const char* filepath) {
     
     /* Build aplay command with device specification */
     snprintf(command, sizeof(command), 
-             "aplay -D %s '%s'", 
+             "aplay -D %s '%s' 2>/dev/null", 
              audio_device, filepath);
     
     /* Execute command */
