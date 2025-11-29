@@ -4,6 +4,23 @@ This directory contains documentation for the HAMPOD project.
 
 ## Contents
 - [Project Overview](../README.md)
+- [Raspberry Pi Migration Plan](Hampod%20RPi%20change%20plan.md)
+
+## Migration Status
+
+**Current Platform:** Raspberry Pi (migrated from NanoPi)
+
+### Completed
+- ✅ **Phase 1-3**: Hardware Abstraction Layer (HAL) implementation and integration
+- ✅ USB Keypad support via HAL
+- ✅ USB Audio support via HAL  
+- ✅ WiringPi dependencies removed
+- ✅ Firmware builds successfully on Raspberry Pi
+
+### In Progress
+- 🚧 Full system integration testing with Software layer
+
+See [Hampod RPi change plan.md](Hampod%20RPi%20change%20plan.md) for detailed migration progress.
 
 ## Deployment
 
