@@ -76,7 +76,7 @@ int writeConfigParamsToFile(const char *filename) {
     FILE *fp = fopen(filename, "w");
     if (fp == NULL) {
         perror("Error opening file for writing");
-        return;
+        return -1;
     }
 
     void **entries = getAllEntriesHashMap(configMapping);
@@ -98,8 +98,8 @@ int writeConfigParamsToFile(const char *filename) {
         fprintf(fp, "MaxValue: %f\n", cp->maxValue);
         fprintf(fp, "StepSize: %f\n", cp->stepSize);
         fprintf(fp, "SelectionSize: %d\n", cp->selectionSize);
-        if (cp->selectionSet)
-            fprintf(fp, "SelectionSet: %s\n", cp->selectionSet);
+        if (cp->selectionSet && cp->selectionSize > 0)
+            fprintf(fp, "SelectionSet: %s\n", cp->selectionSet[0]);
         else
             fprintf(fp, "SelectionSet: \n");
 
