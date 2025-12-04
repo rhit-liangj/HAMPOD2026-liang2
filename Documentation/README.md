@@ -71,3 +71,20 @@ exit
 
 Both options achieve the same result. Option A is faster for quick syncs.
 
+#### Option C: Automated Script (Best for frequent updates)
+
+We have created a script to automate the entire process (Commit -> Push -> Pull -> Make).
+
+1.  **Run the script from Git Bash or your terminal:**
+    ```bash
+    ./Documentation/scripts/remote_install.sh "Your commit message"
+    ```
+
+    This script will:
+    1.  Add all local changes.
+    2.  Commit with your message.
+    3.  Push to GitHub.
+    4.  SSH into the Pi, pull the changes, and run `make` in the `Software` directory.
+
+    *Note: You may need to make the script executable first: `chmod +x Documentation/scripts/remote_install.sh`*
+

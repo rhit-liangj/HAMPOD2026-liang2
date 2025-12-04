@@ -3,8 +3,8 @@ CC = gcc
 CFLAGS = -rdynamic  -Wall -g -lm
 LDFLAGS = -lpthread -lhamlib 
 # Files
-HEADERS := $(wildcard Modes/*.h) $(wildcard HamlibWrappedFunctions/*.h) $(wildcard APIObjects/*.h) $(wildcard ConfigSettings/*.h) 
-LIB_SRCS := $(wildcard Modes/*.c) $(wildcard HamlibWrappedFunctions/*.c) $(wildcard APIObjects/*.c) $(wildcard ConfigSettings/*.c)
+HEADERS := $(wildcard *.h) $(wildcard Modes/*.h) $(wildcard HamlibWrappedFunctions/*.h) $(wildcard APIObjects/*.h) $(wildcard ConfigSettings/*.h) 
+LIB_SRCS := $(filter-out Startup.c, $(wildcard *.c)) $(wildcard Modes/*.c) $(wildcard HamlibWrappedFunctions/*.c) $(wildcard APIObjects/*.c) $(wildcard ConfigSettings/*.c)
 EXEC_SRC := Startup.c
 
 # Shared library name
@@ -36,7 +36,7 @@ $(LIB_NAME): $(LIB_SRCS) $(HEADERS)
 
 # Build executable
 $(EXEC_NAME): $(EXEC_SRC) $(LIB_NAME)
-	$(CC) $(CFLAGS) -rdynamic -o $(EXEC_NAME) $(EXEC_SRC) -I. -L. -l:$(LIB_NAME) -ldl $(LDFLAGS) -Wl,-rpath,'$$ORIGIN' ../Firmware/hal/hal_audio_usb.o ../Firmware/hal/hal_keypad_usb.o
+	$(CC) $(CFLAGS) -rdynamic -DSHAREDLIB -o $(EXEC_NAME) $(EXEC_SRC) -I. -L. -l:$(LIB_NAME) -ldl $(LDFLAGS) -Wl,-rpath,'$$ORIGIN' ../Firmware/hal/hal_audio_usb.o ../Firmware/hal/hal_keypad_usb.o
 
 # Clean
 clean:
