@@ -26,11 +26,11 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Step 2: Connecting to remote to Pull and Make..." -ForegroundColor Cyan
+Write-Host "Step 2: Building Firmware and Software on remote Pi..." -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 
-# SSH into the remote machine, pull changes, and run make in the Software directory
-ssh waynesr@HAMPOD.local "cd ~/HAMPOD2026/Software && echo 'Pulling changes...' && git pull && echo 'Running make...' && make"
+# SSH into the remote machine, pull changes, build Firmware first then Software
+ssh waynesr@HAMPOD.local "cd ~/HAMPOD2026 && echo 'Pulling changes...' && git pull && echo 'Building Firmware...' && cd Firmware && make && echo 'Building Software...' && cd ../Software && make"
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Error: Remote build failed." -ForegroundColor Red
