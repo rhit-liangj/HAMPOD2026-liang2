@@ -1,3 +1,10 @@
+#include <stdlib.h>
+#include <string.h>
+#include "FirmwareCommunication.h"
+
+// Forward declaration
+char* applyDictionary(char* s);
+
 pthread_t speakerThread;
 bool running = true;
 char* audioFolderPath = "../Firmware/pregen_audio/";
