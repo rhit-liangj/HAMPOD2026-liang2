@@ -4,6 +4,8 @@
 * 4) add a new mode metadata to say if it uses the letter keys and which ones, This sould be in pairs A,B and C,D
 */
 
+#include "StateMachine.h"
+
 ModeStates modeState = bootUp;
 char** modeNames;
 bool programableKeysOn = true;

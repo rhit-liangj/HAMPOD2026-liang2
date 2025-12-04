@@ -1,3 +1,4 @@
+#include "KeyWatching.h"
 int keyRequestFrequency =  16000;//was 16000
 bool running2 = true;
 void* keyWatcher(void* args){
