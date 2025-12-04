@@ -36,7 +36,7 @@ $(LIB_NAME): $(LIB_SRCS) $(HEADERS)
 
 # Build executable
 $(EXEC_NAME): $(EXEC_SRC) $(LIB_NAME)
-	$(CC) $(CFLAGS) -rdynamic -DSHAREDLIB -o $(EXEC_NAME) $(EXEC_SRC) -I. -L. -l:$(LIB_NAME) -ldl $(LDFLAGS) -Wl,-rpath,'$$ORIGIN' ../Firmware/hal/hal_audio_usb.o ../Firmware/hal/hal_keypad_usb.o
+	$(CC) $(CFLAGS) -rdynamic -DSHAREDLIB -o $(EXEC_NAME) $(EXEC_SRC) -I. -L. -l:$(LIB_NAME) -ldl $(LDFLAGS) -Wl,-rpath,'$$ORIGIN' ../Firmware/hampod_firm_packet.o ../Firmware/audio_firmware.o ../Firmware/keypad_firmware.o ../Firmware/hal/hal_audio_usb.o ../Firmware/hal/hal_keypad_usb.o
 
 # Clean
 clean:
