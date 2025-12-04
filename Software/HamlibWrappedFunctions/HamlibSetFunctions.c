@@ -1,4 +1,6 @@
 #include "HamlibSetFunctions.h"
+#include "../Radio.h"
+#include "../ModeRouting.h"
 char* vfo_array[3] = {"VFOA", "VFOB", "VFOC"};
 int non_existing_vfo_feature; 
 int temp_index = 0; 

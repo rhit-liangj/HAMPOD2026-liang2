@@ -1,3 +1,4 @@
+#include "Monitoring.h"
 LinkedList* monitoringList;
 pthread_mutex_t linkedListLock;
 pthread_t monitoringThread;

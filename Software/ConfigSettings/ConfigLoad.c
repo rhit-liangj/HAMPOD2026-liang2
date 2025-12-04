@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "ConfigLoad.h"
 bool loadUpFromSaveOLD(int saveFileNumber){
     //get the file to load
