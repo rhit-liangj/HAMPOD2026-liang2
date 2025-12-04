@@ -1,4 +1,5 @@
 #include "DummyDTMFMode.h"
+#include "../FirmwareCommunication.h"
 void* DTMFCommandRelay(KeyPress* keyInput, RIG* radioDetails){
     char dtmfValue[13];
     switch(keyInput->keyPressed){

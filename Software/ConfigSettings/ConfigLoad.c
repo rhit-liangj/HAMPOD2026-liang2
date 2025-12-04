@@ -106,7 +106,7 @@ int loadSaveBootup(KeyPress* keyinput){
         return false;
         break;
     default:
-        if(loadUpFromSaveOLD(convertCharToKeyValue(keyinput->keyPressed))){
+        if(loadUpFromSaveOLD(convertCharToKeyValue(keyinput))){
             return 1;
         }else{
             return 0;
