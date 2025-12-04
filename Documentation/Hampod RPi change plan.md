@@ -39,17 +39,28 @@ This document outlines the plan to migrate the HAMPOD project from NanoPi hardwa
 - ✅ Verified audio playback through USB speaker
 - ✅ Debugged and fixed segfault in test program
 
-### 🚧 Remaining Phases
+#### Phase 4: Firmware Refactoring - COMPLETE
+- ✅ Reviewed and improved build system
+- ✅ Enhanced Makefile with dependency tracking and HAL object compilation
+- ✅ Created comprehensive `BUILD.md` documentation
+- ✅ Updated `Firmware/README.md` with Raspberry Pi details
+- ✅ Verified clean build on Pi
 
-#### Phase 4: Firmware Refactoring (Not Started)
-- Clean up build system
-- Remove legacy code
-- Optimize HAL integration
-
-#### Phase 5: Software Layer Verification (Not Started)
-- Test full system with Software layer
-- Verify Hamlib integration
-- Test all radio modes
+#### Phase 5: Software Layer Verification - IN PROGRESS
+- ✅ Analyzed Software layer structure and dependencies
+- ✅ Removed `-lwiringPi` from Software Makefile
+- ✅ Fixed compilation errors (21 separate fixes across multiple files)
+- ✅ Refactored build system from unity build to shared library (`libModes.so`)
+- ✅ Implemented pipe communication in `FirmwareCommunication.c`
+- ✅ Fixed `pthread_create` type mismatch in `FirmwareCommunication.c`
+- ✅ Restored corrupted `RigListCreator.c` and fixed Hamlib callback signature
+- ✅ Added HAL object linking to Software Makefile
+- ✅ Resolved static declaration conflicts by adding `-DSHAREDLIB` flag
+- ✅ Added missing includes to standalone-compiled source files
+- 🚧 Completing final compilation fixes (`ModeRouting.c`)
+- ⏳ Integration testing (Firmware + Software)
+- ⏳ Verifying pipe communication
+- ⏳ Testing keypad and audio flows
 
 #### Phase 6-9: Build System, Testing, Documentation, Deployment (Not Started)
 
