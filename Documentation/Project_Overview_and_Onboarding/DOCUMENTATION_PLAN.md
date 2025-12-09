@@ -89,7 +89,7 @@
    │   ├── Modes/        ← Operating modes
    │   ├── HamlibWrappedFunctions/ ← Radio control
    │   └── ConfigSettings/ ← Configuration
-   └── Hardware Files/   ← Schematics, PCB files?
+   └── Hardware_Files/   ← Schematics, PCB files?
    ```
 
 2. [ ] Create **dependency diagrams** showing:
@@ -141,20 +141,20 @@
 
 | Document | Description | Location |
 |----------|-------------|----------|
-| `EXECUTIVE_SUMMARY.md` | Non-technical overview for management | `Documentation/Project Overview and Onboarding/` |
-| `ARCHITECTURE.md` | Technical architecture with diagrams | `Documentation/Project Overview and Onboarding/` |
-| `GETTING_STARTED.md` | Developer onboarding guide | `Documentation/Project Overview and Onboarding/` |
-| `BUILD_AND_DEPLOY.md` | How to build and deploy to Pi | `Documentation/Project Overview and Onboarding/` |
-| `COMMIT_HISTORY_ANALYSIS.md` | Summary of the ~50 commits | `Documentation/Project Overview and Onboarding/` |
+| `EXECUTIVE_SUMMARY.md` | Non-technical overview for management | `Documentation/Project_Overview_and_Onboarding/` |
+| `ARCHITECTURE.md` | Technical architecture with diagrams | `Documentation/Project_Overview_and_Onboarding/` |
+| `GETTING_STARTED.md` | Developer onboarding guide | `Documentation/Project_Overview_and_Onboarding/` |
+| `BUILD_AND_DEPLOY.md` | How to build and deploy to Pi | `Documentation/Project_Overview_and_Onboarding/` |
+| `COMMIT_HISTORY_ANALYSIS.md` | Summary of the ~50 commits | `Documentation/Project_Overview_and_Onboarding/` |
 
 ### Supporting Documents (Priority 2)
 
 | Document | Description | Location |
 |----------|-------------|----------|
-| `GLOSSARY.md` | Ham radio and project-specific terms | `Documentation/Project Overview and Onboarding/` |
-| `TESTING_GUIDE.md` | How to run and write tests | `Documentation/Project Overview and Onboarding/` |
-| `TROUBLESHOOTING.md` | Common issues and solutions | `Documentation/Project Overview and Onboarding/` |
-| `ROADMAP.md` | Future plans and remaining work | `Documentation/Project Overview and Onboarding/` |
+| `GLOSSARY.md` | Ham radio and project-specific terms | `Documentation/Project_Overview_and_Onboarding/` |
+| `TESTING_GUIDE.md` | How to run and write tests | `Documentation/Project_Overview_and_Onboarding/` |
+| `TROUBLESHOOTING.md` | Common issues and solutions | `Documentation/Project_Overview_and_Onboarding/` |
+| `ROADMAP.md` | Future plans and remaining work | `Documentation/Project_Overview_and_Onboarding/` |
 
 ---
 

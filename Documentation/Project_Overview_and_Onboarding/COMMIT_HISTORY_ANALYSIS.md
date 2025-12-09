@@ -397,7 +397,7 @@ Based on commit analysis, these files have been touched most often:
 | `Firmware/keypad_firmware.c` | 8+ | Heavily refactored |
 | `Firmware/Makefile` | 5+ | Build system changes |
 | `Software/Makefile` | 4+ | Linker configuration |
-| `Documentation/Hampod RPi change plan.md` | 3+ | Migration tracking |
+| `Documentation/Hampod_RPi_change_plan.md` | 3+ | Migration tracking |
 | `Software/FirmwareCommunication.c` | 3+ | Pipe implementation |
 
 ---

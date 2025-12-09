@@ -12,16 +12,16 @@ This project is currently undergoing a major software rewrite ("Fresh Start"). T
 ## 📂 Repository Structure
 
 *   **`Documentation/`** - **Start Here.** Contains build guides, architectural plans, and developer onboarding.
-    *   `Project Overview and Onboarding/` - Critical reading for developers.
-        *   [`fresh-start-big-plan.md`](Documentation/Project%20Overview%20and%20Onboarding/fresh-start-big-plan.md) - The master plan for the rewrite.
-        *   [`fresh-start-phase-zero-plan.md`](Documentation/Project%20Overview%20and%20Onboarding/fresh-start-phase-zero-plan.md) - Immediate steps for core infrastructure.
+    *   `Project_Overview_and_Onboarding/` - Critical reading for developers.
+        *   [`fresh-start-big-plan.md`](Documentation/Project_Overview_and_Onboarding/fresh-start-big-plan.md) - The master plan for the rewrite.
+        *   [`fresh-start-phase-zero-plan.md`](Documentation/Project_Overview_and_Onboarding/fresh-start-phase-zero-plan.md) - Immediate steps for core infrastructure.
 *   **`Firmware/`** - The low-level C code that runs on the Pi. It manages the keypad hardware and separates audio output.
 *   **`Software/`** - The legacy (2025 team) software implementation. It is currently serving as a reference but is slated for replacement.
-*   **`Hardware Files/`** - Schematics and PCB design files for the custom keypad/hat.
+*   **`Hardware_Files/`** - Schematics and PCB design files for the custom keypad/hat.
 
 ## 🚀 Getting Started (Developers)
 
-1.  **Review the Plans:** Read `Documentation/Project Overview and Onboarding/fresh-start-big-plan.md` to understand the architecture.
+1.  **Review the Plans:** Read `Documentation/Project_Overview_and_Onboarding/fresh-start-big-plan.md` to understand the architecture.
 2.  **Setup Environment:**
     *   Target hardware: Raspberry Pi 5 (Debian Trixie).
     *   Dependencies: `libhamlib-dev`, `festival`, `alsa-utils`, `libasound2-dev`.

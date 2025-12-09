@@ -20,7 +20,7 @@ This directory contains documentation for the HAMPOD project.
 ### In Progress
 - 🚧 Full system integration testing with Software layer
 
-See [Hampod RPi change plan.md](Hampod%20RPi%20change%20plan.md) for detailed migration progress.
+See [Hampod_RPi_change_plan.md](Hampod_RPi_change_plan.md) for detailed migration progress.
 
 ## Deployment
 
