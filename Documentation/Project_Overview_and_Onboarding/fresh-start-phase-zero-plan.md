@@ -168,7 +168,7 @@ We need a home for shared definitions used across modules.
 
 ## Execution Checklist
 
-- [ ] **Step 0.1** Directories & Headers
+- [x] **Step 0.1** Directories & Headers ✅ (2025-12-14)
 - [ ] **Step 1.1** Comm Reader (Keypad)
 - [ ] **Step 1.2** Comm Writer (Audio)
 - [ ] **Step 2.1** Speech Queue
