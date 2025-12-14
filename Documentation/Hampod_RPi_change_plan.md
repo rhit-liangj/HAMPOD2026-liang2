@@ -396,25 +396,22 @@ void* firmwarePlayAudio(void* text) {
 }
 ```
 
-### Phase 5: Software Layer (No Changes Required)
+### Phase 5: Software Layer (Fresh Start)
 
-The Software layer should require **minimal to no changes** because:
+> [!IMPORTANT]
+> **Decision Change:** The original plan assumed minimal Software changes, but after analysis the legacy codebase was too complex to fix incrementally. We are now taking a **fresh start** approach.
 
-1. **Packet Protocol Unchanged**: Communication between Software and Firmware uses the same packet format
-2. **Key Mapping Handled in Firmware**: Software receives the same key symbols ('0'-'9', 'A'-'D', '*', '#')
-3. **Audio Interface Unchanged**: Software sends the same audio packet format
-4. **Hamlib Integration Preserved**: Radio control is independent of keypad/audio hardware
+**Why Fresh Start:**
+1. **Technical Debt**: 21+ separate compilation fixes were needed across the codebase
+2. **Architectural Issues**: Monolithic files (1000+ lines), tight coupling, unclear state machines
+3. **Documentation Gap**: Limited comments, no clear module boundaries
+4. **Verification Difficulty**: No unit tests, integration testing was failing
 
-**Files That Should NOT Need Changes:**
-- `Software/StateMachine.c`
-- `Software/ModeRouting.c`
-- `Software/Modes/*`
-- `Software/HamlibWrappedFunctions/*`
-- `Software/KeyWatching.c`
-
-**Potential Minor Changes:**
-- `Software/FirmwareCommunication.c`: May need timeout adjustments if USB keypad has different response characteristics
-- Configuration files: Update any hardware-specific settings
+**Fresh Start Approach:**
+- Create new `Software2/` directory with clean module boundaries
+- Reuse proven components: Hamlib wrappers, KeyPress struct, audio caching logic
+- Implement modes incrementally with clear verification at each step
+- See [Phase 5 details in Progress Status](#phase-5-software-layer---fresh-start-approach) above
 
 ### Phase 6: Build System Updates
 
