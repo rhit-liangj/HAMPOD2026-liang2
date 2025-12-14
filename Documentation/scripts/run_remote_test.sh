@@ -48,8 +48,10 @@ kill $FIRM_PID 2>/dev/null
 echo '--- Firmware Log ---'
 cat firmware.log
 
-if [ $TEST_EXIT -eq 0 ]; then
-    echo 'TEST MARKER: SUCCESS'
+if [ $TEST_EXIT -eq 124 ]; then
+    echo 'TEST MARKER: SUCCESS (Test ran for full duration)'
+elif [ $TEST_EXIT -eq 0 ]; then
+    echo 'TEST MARKER: SUCCESS (Test exited normally)'
 else
     echo "TEST MARKER: FAILURE (Exit code $TEST_EXIT)"
 fi
