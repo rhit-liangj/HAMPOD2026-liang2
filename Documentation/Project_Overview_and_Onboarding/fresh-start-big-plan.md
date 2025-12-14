@@ -68,7 +68,7 @@ Build these foundation components FIRST - they are used by everything:
    - Used by speech, keypad, and all modes
 
 2. **Speech Module** (`speech.c`)
-   - Festival TTS (default)
+   - Piper TTS (default) with Festival fallback
    - **Key design decision:** Separate thread for audio playback
    - Non-blocking queue-based design (see Architecture Notes)
    - **Audio caching:** HashMap of pre-generated WAV files for common phrases
@@ -263,32 +263,30 @@ When user presses key, beep should be immediate even if speech is in progress.
 
 ---
 
-### Problem 3: Speech Synthesizer Selection (Festival vs Piper)
+### Problem 3: Speech Synthesizer Selection (Piper vs Festival)
 
-**Festival:**
-- Pros: Already working, simple, low CPU
+**Piper (Default):**
+- Pros: More natural voice, local (no internet), zero-latency persistent mode
+- Cons: Requires one-time installation (~60MB model)
+- **Status: Already integrated in Firmware via `hal_tts_piper.c`**
+
+**Festival (Fallback):**
+- Pros: Pre-installed on most Linux, simple
 - Cons: Robotic voice
 
-**Piper:**
-- Pros: More natural voice, local (no internet)
-- Cons: Higher CPU, 200-500ms latency per phrase
-
-**Recommended Approach:**
-1. Abstract speech in `speech.c` with backend selection
-2. Start with Festival (known working)
-3. Add Piper backend later
-4. Config option to switch
+**Current Implementation:**
+- Firmware handles TTS selection at compile time (`TTS_ENGINE=piper|festival`)
+- Piper runs in persistent mode for zero-latency speech
+- Software just sends text via pipes - Firmware handles TTS backend
 
 ```c
-// speech.h
-typedef enum { SPEECH_FESTIVAL, SPEECH_PIPER } SpeechBackend;
-void speech_set_backend(SpeechBackend backend);
-void speech_say(const char* text);  // Uses selected backend
+// speech.h - Software just sends text, Firmware picks TTS
+void speech_say(const char* text);  // Sends to Firmware via pipe
 ```
 
-**Piper latency mitigation:**
+**Piper latency mitigation (already implemented):**
+- Persistent popen() pipeline avoids startup overhead
 - Pre-generate common phrases (digits, "megahertz", "frequency", etc.)
-- Only use TTS for dynamic content
 - Cache recently spoken phrases
 
 ---
