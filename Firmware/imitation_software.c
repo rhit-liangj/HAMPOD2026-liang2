@@ -20,7 +20,7 @@ const char* DTMF_names[] = {
 };
 
 int index_getter(char keypad_input){
-    int index = 0;
+    // int index = 0; // Unused
     if(keypad_input >= '0' && keypad_input <= '9') {
         return keypad_input - '0'; //UnASCII the input
     }
@@ -66,7 +66,7 @@ Inst_packet* read_from_pipe(){
 
 int main(){
     printf("Hampod Software Emulation Tool For interacting with the hardware\n");
-    printf("Size of type = %d\n", sizeof(Packet_type));
+    printf("Size of type = %lu\n", sizeof(Packet_type));
     printf("Connecting to Firmware_o\n");
     input_pipe = open(OUTPUT_PIPE, O_RDONLY);
     if(input_pipe == -1){
@@ -74,7 +74,7 @@ int main(){
         exit(-1);
     }
     printf("Attempting to connect to Firmware_i\n");
-    output_pipe;
+    // output_pipe; // Statement with no effect
     for(int i = 0; i < 1000; i++){
         output_pipe = open(INPUT_PIPE, O_WRONLY);
         printf("Attempt %d/1000\r", i);
@@ -94,10 +94,10 @@ int main(){
         int mode = 0; //keypad = 0: DTMF = 1
         char new_data = AUDIO;
         Packet_type keypad = KEYPAD;
-        char keypad_msg = 'r';
+        unsigned char keypad_msg = 'r';
         char len = 1;
         char msg[] = "sThis is a keypad and audio integration test for the firmware. Press * to toggle DTMF mode.";
-        Inst_packet* temp = create_inst_packet(new_data, strlen(msg) + 1, msg, 0);
+        Inst_packet* temp = create_inst_packet(new_data, strlen(msg) + 1, (unsigned char*)msg, 0);
         send_packet(temp);
         Inst_packet* audio_packet = read_from_pipe();
         destroy_inst_packet(&audio_packet);
@@ -128,8 +128,8 @@ int main(){
             if(mode == 0) {
                 printf("Not DTMF\n");
                 strcpy(buffer, "ppregen_audio/");
-                strcat(buffer, keypad_names[keypad_moment]);
-                temp = create_inst_packet(new_data, strlen(buffer) + 1, buffer, 0);
+                strcat(buffer, keypad_names[(int)keypad_moment]);
+                temp = create_inst_packet(new_data, strlen(buffer) + 1, (unsigned char*)buffer, 0);
                 send_packet(temp);
                 destroy_inst_packet(&temp);
                 audio_packet = read_from_pipe();
@@ -137,8 +137,8 @@ int main(){
             } else {
                 printf("DTMF\n");
                 strcpy(buffer, "ppregen_audio/");
-                strcat(buffer, DTMF_names[keypad_moment]);
-                temp = create_inst_packet(new_data, strlen(buffer) + 1, buffer, 0);
+                strcat(buffer, DTMF_names[(int)keypad_moment]);
+                temp = create_inst_packet(new_data, strlen(buffer) + 1, (unsigned char*)buffer, 0);
                 send_packet(temp);
                 destroy_inst_packet(&temp);
                 audio_packet = read_from_pipe();

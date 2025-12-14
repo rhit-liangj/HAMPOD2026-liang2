@@ -52,6 +52,7 @@ This document outlines the plan to migrate the HAMPOD project from NanoPi hardwa
 - ✅ Patched `imitation_software` to handle "No Key" (`-`) packets preventing segfaults
 - ✅ Created robust deployment/test scripts (`deploy_and_run_imitation.ps1`, `run_remote_test.sh`)
 - ✅ Verified stable 15-second bidirectional communication (Audio + Keypad)
+- 📄 See [Firmware Fix and Functional Test Report](Project_Overview_and_Onboarding/Completed_Tasks/firmware_test_fix.md) for details.
 
 #### Phase 5: Software Layer Verification - IN PROGRESS
 - ✅ Analyzed Software layer structure and dependencies

@@ -350,7 +350,7 @@ void *io_buffer_thread(void* arg) {
         read(i_pipe, buffer, size);
 
         FIRMWARE_IO_PRINTF("Found packet with type %d, size %d\n", packet_type, size);
-        FIRMWARE_IO_PRINTF("Buffer holds:%s: with size %d\n", buffer, sizeof(buffer));
+        FIRMWARE_IO_PRINTF("Buffer holds:%s: with size %lu\n", buffer, sizeof(buffer));
 
         Inst_packet* new_packet = create_inst_packet(packet_type, size, buffer, tag);
 
