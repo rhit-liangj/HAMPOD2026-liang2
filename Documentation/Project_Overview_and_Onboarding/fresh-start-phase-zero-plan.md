@@ -157,10 +157,20 @@ Before integration testing, fix known Firmware issues:
    - **Symptom:** Last speech item repeats multiple times
    - **Fix:** Add error checking to `read()` calls (lines 161-164) to detect disconnection
 
+2. **Stale Pipes Block Startup** (`Firmware/firmware.c`)
+   - **Problem:** `mkfifo()` fails if pipes from previous run weren't cleaned up
+   - **Symptom:** Firmware exits with `mkfifo: File exists` error
+   - **Fix:** Add `unlink()` calls before `mkfifo()` to remove stale pipes
+
+3. **Keypad Hold Detection** (`Firmware/keypad_firmware.c`)
+   - **Problem:** Keypad process reports key only ONCE, then immediately returns '-'
+   - **Symptom:** Software cannot detect held keys because state isn't continuously reported
+   - **Fix:** Modify keypad to continuously report the held key until it's released
+
 **Verification:**
-- Run speech queue test
-- On test completion, speech should NOT repeat
-- Firmware should cleanly handle Software disconnect
+- Run speech queue test - speech should NOT repeat
+- Firmware should start cleanly after unclean shutdown
+- Keypad hold detection should work (key held >500ms triggers hold event)
 
 ### Step 0.9: Integration Test (`main_phase0.c`)
 - Init Config
@@ -189,7 +199,13 @@ Before integration testing, fix known Firmware issues:
 - [x] **Step 2.1** Speech Queue ✅ (2025-12-14)
 - [ ] **Step 2.2** Audio Caching
 - [ ] **Step 2.3** Dictionary Sub
-- [ ] **Step 3.1** Keypad Events (Hold logic)
+- [x] **Step 3.1** Keypad Events ⚠️ (2025-12-14) - Press detection works; Hold detection blocked by Firmware (see 0.8)
 - [ ] **Step 4.1** Config Load/Save
 - [ ] **Step 0.8** Firmware Bug Fixes
 - [ ] **Step 0.9** Integration Test
+
+### Notes
+
+**Step 3.1 Hold Detection Issue:** The Firmware's keypad process reports each key press only ONCE, then immediately returns '-' (no key). It does not continuously report the key while it's being held. This means the Software cannot detect holds via polling. Options to fix:
+1. **Firmware Enhancement:** Modify `keypad_firmware.c` to continuously report the held key until it's released
+2. **Alternative:** Count rapid consecutive presses as a "double-tap" feature instead of holds

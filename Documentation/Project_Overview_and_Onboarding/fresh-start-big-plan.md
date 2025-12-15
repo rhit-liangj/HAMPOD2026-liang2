@@ -193,10 +193,22 @@ The Firmware is currently working and should be modified only when necessary. He
 | Bug | Description | Impact | When to Fix |
 |-----|-------------|--------|-------------|
 | Audio IO Thread Repeat | `audio_io_thread` in `audio_firmware.c` continues reading from pipe after Software disconnects, causing last speech item to repeat | Cosmetic - audio works but may repeat | Before Phase 0.9 Integration Test |
+| Stale Pipes Block Startup | Firmware fails with `mkfifo: File exists` if pipes from previous run weren't cleaned up | Blocking - must manually delete pipes before restart | Before Phase 0.9 Integration Test |
 
+### Bug 1: Audio IO Thread Repeat
 **Root Cause:** The audio IO thread doesn't properly detect end-of-stream or disconnection. When the Software closes its pipe, the Firmware keeps reading stale buffer data.
 
 **Proposed Fix:** Add error checking to `read()` calls in `audio_io_thread()` (lines 161-164) to detect disconnection and reset state.
+
+### Bug 2: Stale Pipes Block Startup
+**Root Cause:** `firmware.c` calls `mkfifo()` without first checking if the pipe already exists. On unclean shutdown, pipes remain in filesystem.
+
+**Current Workaround:** Manually run `rm -f Firmware_i Firmware_o Keypad_i Keypad_o Speaker_i Speaker_o` before starting Firmware.
+
+**Proposed Fix:** Either:
+- Option A: Add `unlink()` calls before `mkfifo()` to remove stale pipes
+- Option B: Use `O_CREAT` with `open()` instead of separate `mkfifo()`
+- Option C: Check if pipe exists and skip `mkfifo()` (but may leave stale data)
 
 **Defer unless blocking:**
 - If you encounter a Firmware bug, fix it then
