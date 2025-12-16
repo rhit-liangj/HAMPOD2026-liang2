@@ -212,3 +212,35 @@ Before integration testing, fix known Firmware issues:
 **Step 3.1 Hold Detection Issue:** The Firmware's keypad process reports each key press only ONCE, then immediately returns '-' (no key). It does not continuously report the key while it's being held. This means the Software cannot detect holds via polling. Options to fix:
 1. **Firmware Enhancement:** Modify `keypad_firmware.c` to continuously report the held key until it's released
 2. **Alternative:** Count rapid consecutive presses as a "double-tap" feature instead of holds
+
+**Step 2.2 Audio Caching Investigation (2025-12-15):** Attempted implementation revealed complexity in Firmware audio pipe communication. Key findings:
+
+1. **Firmware Audio Architecture:**
+   - Firmware creates separate pipes: `Speaker_i` (input), `Speaker_o` (output)
+   - Audio process runs in a forked process, reads from `Speaker_i`
+   - Audio process expects binary packets: `{type, data_len, tag, data}`
+   - Audio types: `'d'` = direct TTS, `'s'` = TTS+save, `'p'` = play file
+
+2. **Pipe Communication Complexity:**
+   - Software must write to BOTH `Firmware_i` (for keypad) AND `Speaker_i` (for audio)
+   - Audio pipe is separate from main Firmware pipe
+   - Old Software called `firmwarePlayAudio()` directly (shared library), NOT through pipes
+
+3. **Pre-generated Audio Files:**
+   - Located in `Firmware/pregen_audio/`
+   - 72 cached files exist with names like `0 .wav`, `1 .wav`, `A.wav`, etc.
+   - File paths for playback: `pregen_audio/<name>` (relative to Firmware directory)
+   - Firmware appends `.wav` automatically
+
+4. **Issues Encountered:**
+   - Direct TTS (`'d'`) works through `Speaker_i` pipe
+   - File playback (`'p'`) packets were being sent but audio didn't play
+   - Audio process may have blocking/mutex issues when queue is empty
+   - Further investigation needed into why `'p'` packets don't trigger playback
+
+5. **Recommendations for Future Implementation:**
+   - May need to study `imitation_software` tool for working audio example
+   - Consider using direct TTS only (simpler, Piper is already fast)
+   - If caching needed, investigate Firmware audio_io_thread mutex behavior
+   - Files without numbers should use TTS+save (`'s'`) to build cache over time
+
