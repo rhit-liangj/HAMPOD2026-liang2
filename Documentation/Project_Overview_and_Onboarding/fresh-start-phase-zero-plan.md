@@ -205,16 +205,16 @@ Before integration testing, fix known Firmware issues:
 - [x] **Step 2.1** Speech Queue ✅ (2025-12-14)
 - [ ] **Step 2.2** Audio Caching
 - [ ] **Step 2.3** Dictionary Sub
-- [x] **Step 3.1** Keypad Events ⚠️ (2025-12-14) - Press detection works; Hold detection blocked by Firmware (see 0.8)
+- [x] **Step 3.1** Keypad Events ✅ (2025-12-18) - Full press/hold detection working
 - [ ] **Step 4.1** Config Load/Save
-- [ ] **Step 0.8** Firmware Bug Fixes
+- [x] **Step 0.8** Firmware Bug Fixes ✅ (2025-12-18) - All 4 bugs fixed
 - [ ] **Step 0.9** Integration Test
 
 ### Notes
 
-**Step 3.1 Hold Detection Issue:** The Firmware's keypad process reports each key press only ONCE, then immediately returns '-' (no key). It does not continuously report the key while it's being held. This means the Software cannot detect holds via polling. Options to fix:
-1. **Firmware Enhancement:** Modify `keypad_firmware.c` to continuously report the held key until it's released
-2. **Alternative:** Count rapid consecutive presses as a "double-tap" feature instead of holds
+**Step 3.1 Hold Detection (RESOLVED 2025-12-18):** Fixed by:
+1. Firmware Bug 3 fix (`53baaaa`) - HAL now properly reports held keys
+2. Software2 keypad.c fix (`a23307f`) - Added release threshold debouncing
 
 **Step 2.2 Audio Caching Investigation (2025-12-15):** Attempted implementation revealed complexity in Firmware audio pipe communication. Key findings:
 
