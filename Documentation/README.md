@@ -4,6 +4,7 @@ This directory contains documentation for the HAMPOD project.
 
 ## Contents
 - [Project Overview](../README.md)
+- [**RPi Setup Guide**](Project_Overview_and_Onboarding/RPi_Setup_Guide.md) 👈 **Start Here**
 - [Raspberry Pi Migration Plan](Hampod%20RPi%20change%20plan.md)
 
 ## Migration Status

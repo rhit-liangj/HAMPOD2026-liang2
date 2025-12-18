@@ -3,7 +3,7 @@
 
 CC = gcc
 CFLAGS = -Wall -I.. -DUSE_PIPER
-LDFLAGS = -lasound
+LDFLAGS = -lasound -lm
 HAL_DIR = ..
 
 # HAL source files
