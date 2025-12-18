@@ -28,6 +28,12 @@ static struct {
     int suppress_next;
 } debounce_state = {-1, {0, 0}, 0};
 
+/* Key hold tracking state */
+static struct {
+    char held_key;       /* Currently held key character, '-' for none */
+    int held_code;       /* Raw keycode of held key, -1 for none */
+} hold_state = {'-', -1};
+
 /* Keycode to HAMPOD symbol mapping table */
 static const struct {
     int keycode;
@@ -140,9 +146,9 @@ KeypadEvent hal_keypad_read(void) {
     /* Read input event (non-blocking) */
     bytes_read = read(keypad_fd, &ev, sizeof(ev));
     
-    if (bytes_read == sizeof(ev)) {
-        /* We only care about key press events */
-        if (ev.type == EV_KEY && ev.value == 1) {  /* 1 = key press */
+    if (bytes_read == sizeof(ev) && ev.type == EV_KEY) {
+        
+        if (ev.value == 1) {  /* Key press down */
             
             /* Handle '00' key debouncing */
             /* The '00' key on many keypads sends two KEY_KP0 events rapidly */
@@ -164,11 +170,38 @@ KeypadEvent hal_keypad_read(void) {
             debounce_state.last_time = ev.time;
             
             /* Map the keycode to symbol */
+            char key_char = map_keycode_to_symbol(ev.code);
+            
+            /* Update hold state */
+            hold_state.held_key = key_char;
+            hold_state.held_code = ev.code;
+            
+            /* Return the press event */
             event.raw_code = ev.code;
-            event.key = map_keycode_to_symbol(ev.code);
-            event.valid = (event.key != '-') ? 1 : 0;
+            event.key = key_char;
+            event.valid = (key_char != '-') ? 1 : 0;
+            
+        } else if (ev.value == 0) {  /* Key release */
+            
+            /* Only clear hold state if this release matches the held key */
+            if (ev.code == hold_state.held_code) {
+                hold_state.held_key = '-';
+                hold_state.held_code = -1;
+            }
+            /* Don't report release events as key presses */
+            
+        } else if (ev.value == 2) {  /* Key repeat (held) */
+            
+            /* Report the held key again */
+            if (hold_state.held_key != '-') {
+                event.raw_code = hold_state.held_code;
+                event.key = hold_state.held_key;
+                event.valid = 1;
+            }
         }
     }
+    /* If no event available (bytes_read <= 0), just return invalid event */
+    /* Linux input system provides ev.value == 2 (repeat) for held keys */
     
     return event;
 }

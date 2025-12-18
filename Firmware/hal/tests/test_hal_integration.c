@@ -1,15 +1,17 @@
 /**
  * @file test_hal_integration.c
- * @brief Integration test for Keypad + Speech + Audio
+ * @brief Integration test for Keypad + TTS + Audio
  * 
  * This test verifies the complete loop:
  * 1. Read key from USB keypad (HAL)
  * 2. Convert key to word
- * 3. Generate speech WAV (text2wave)
- * 4. Play speech WAV (HAL)
+ * 3. Speak the word using TTS HAL
  * 
- * Compile: make test_integration
- * Run: sudo ./test_integration
+ * Also tests key hold detection - if same key received multiple times
+ * in a row, it's a held key.
+ * 
+ * Compile: make test_hal_integration
+ * Run: ./test_hal_integration
  */
 
 #include <stdio.h>
@@ -17,8 +19,10 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
+#include <time.h>
 #include "hal_keypad.h"
 #include "hal_audio.h"
+#include "hal_tts.h"
 
 static volatile int running = 1;
 
@@ -55,8 +59,9 @@ const char* get_spoken_word(char key) {
 }
 
 int main() {
-    printf("=== HAMPOD Integration Test: Keypad + Speech + Audio ===\n");
-    printf("Press Ctrl+C to exit\n\n");
+    printf("=== HAMPOD Integration Test: Keypad + TTS + Audio ===\n");
+    printf("Press Ctrl+C to exit\n");
+    printf("Hold a key for 1+ seconds to hear 'key held'\n\n");
     
     /* Set up signal handler */
     signal(SIGINT, signal_handler);
@@ -75,29 +80,72 @@ int main() {
         return 1;
     }
     
+    printf("Initializing TTS HAL...\n");
+    if (hal_tts_init() != 0) {
+        fprintf(stderr, "ERROR: Failed to initialize TTS\n");
+        hal_audio_cleanup();
+        hal_keypad_cleanup();
+        return 1;
+    }
+    printf("TTS Engine: %s\n", hal_tts_get_impl_name());
+    
     printf("\nSystem Ready!\n");
     printf("Press any key on the keypad. The Pi should speak the key name.\n\n");
     
-    char command[512];
-    const char* output_file = "/tmp/hampod_speak.wav";
+    /* Hold detection state */
+    char last_key = '-';
+    int hold_count = 0;
+    int no_event_count = 0;   /* Consecutive polls with no event */
+    int hold_spoken = 0;      /* Have we spoken "key held"? */
+    const int HOLD_THRESHOLD = 100;   /* 100 polls @ 10ms = 1 second hold */
+    const int RELEASE_THRESHOLD = 30; /* 30 consecutive no-events (300ms) = released */
     
     while (running) {
         KeypadEvent event = hal_keypad_read();
         
         if (event.valid) {
-            const char* word = get_spoken_word(event.key);
-            printf("Key: '%c' -> Speaking: \"%s\"\n", event.key, word);
+            no_event_count = 0;  /* Reset no-event counter */
             
-            /* Generate speech using text2wave */
-            /* echo "word" | text2wave -o /tmp/hampod_speak.wav */
-            snprintf(command, sizeof(command), "echo \"%s\" | text2wave -o %s", word, output_file);
-            int ret = system(command);
-            
-            if (ret == 0) {
-                /* Play the generated file */
-                hal_audio_play_file(output_file);
+            if (event.key == last_key) {
+                /* Same key still held - increment hold counter */
+                hold_count++;
+                
+                if (hold_count >= HOLD_THRESHOLD && !hold_spoken) {
+                    printf("Key '%c' HELD for 1+ second\n", event.key);
+                    hal_tts_speak("key held", NULL);
+                    hold_spoken = 1;
+                }
+                /* Don't speak again - just continue holding */
             } else {
-                fprintf(stderr, "Error generating speech (is festival/text2wave installed?)\n");
+                /* New key press (different from last key) */
+                const char* word = get_spoken_word(event.key);
+                printf("Key: '%c' -> Speaking: \"%s\"\n", event.key, word);
+                hal_tts_speak(word, NULL);
+                
+                last_key = event.key;
+                hold_count = 1;
+                hold_spoken = 0;
+            }
+        } else {
+            /* No event this poll */
+            if (last_key != '-') {
+                /* Key was being held - increment both counters */
+                no_event_count++;
+                hold_count++;  /* Keep counting hold time even during gaps */
+                
+                /* Check for hold threshold even during no-event polls */
+                if (hold_count >= HOLD_THRESHOLD && !hold_spoken) {
+                    printf("Key '%c' HELD for 1+ second\n", last_key);
+                    hal_tts_speak("key held", NULL);
+                    hold_spoken = 1;
+                }
+                
+                /* Only reset after several consecutive no-events */
+                if (no_event_count >= RELEASE_THRESHOLD) {
+                    last_key = '-';
+                    hold_count = 0;
+                    hold_spoken = 0;
+                }
             }
         }
         
@@ -107,9 +155,10 @@ int main() {
     
     /* Cleanup */
     printf("\nCleaning up...\n");
-    hal_keypad_cleanup();
+    hal_tts_cleanup();
     hal_audio_cleanup();
-    remove(output_file);
+    hal_keypad_cleanup();
     
     return 0;
 }
+
