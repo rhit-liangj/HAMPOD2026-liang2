@@ -93,6 +93,11 @@ static void* keypad_thread_func(void* arg) {
     
     LOG_INFO("Keypad thread started");
     
+    /* Number of consecutive no-key polls before considering key released.
+     * Linux key repeat has gaps between events, so we need debouncing. */
+    static const int RELEASE_THRESHOLD = 6;  /* 6 polls x 50ms = 300ms */
+    int no_key_count = 0;
+    
     while (running) {
         char key;
         
@@ -106,7 +111,9 @@ static void* keypad_thread_func(void* arg) {
         bool key_pressed = (key != '-' && key != 0xFF && key != 0x00);
         
         if (key_pressed) {
-            // Key is being reported
+            // Key is being reported - reset no-key counter
+            no_key_count = 0;
+            
             if (last_key == '-') {
                 // First time seeing this key - record it and the time
                 last_key = key;
@@ -133,22 +140,33 @@ static void* keypad_thread_func(void* arg) {
             }
             
         } else {
-            // No key pressed (key released)
+            // No key pressed - but might just be a gap between repeat events
             if (last_key != '-') {
-                // We had a key that is now released
-                long hold_time = elapsed_since_press();
+                no_key_count++;
                 
-                if (!hold_event_fired) {
-                    // Determine if it was a hold or press based on duration
-                    if (hold_time >= hold_threshold_ms) {
-                        fire_event(last_key, true);   // Hold
-                    } else {
-                        fire_event(last_key, false);  // Press
-                    }
+                // Check for hold while waiting for release confirmation
+                if (!hold_event_fired && elapsed_since_press() >= hold_threshold_ms) {
+                    fire_event(last_key, true);  // Hold event
+                    hold_event_fired = true;
                 }
                 
-                LOG_DEBUG("Key up: '%c' (held for %ldms)", last_key, hold_time);
-                last_key = '-';
+                // Only consider truly released after threshold
+                if (no_key_count >= RELEASE_THRESHOLD) {
+                    long hold_time = elapsed_since_press();
+                    
+                    if (!hold_event_fired) {
+                        // Determine if it was a hold or press based on duration
+                        if (hold_time >= hold_threshold_ms) {
+                            fire_event(last_key, true);   // Hold
+                        } else {
+                            fire_event(last_key, false);  // Press
+                        }
+                    }
+                    
+                    LOG_DEBUG("Key up: '%c' (held for %ldms)", last_key, hold_time);
+                    last_key = '-';
+                    no_key_count = 0;
+                }
             }
         }
         
