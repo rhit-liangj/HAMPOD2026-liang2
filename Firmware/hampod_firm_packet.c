@@ -13,8 +13,13 @@ Inst_packet* create_inst_packet(Packet_type new_type, unsigned short new_len, un
 }
 
 void destroy_inst_packet(Inst_packet** packet){
+    if (packet == NULL || *packet == NULL) {
+        return;  /* Nothing to destroy */
+    }
     Inst_packet* temp = *packet;
-    free(temp->data);
+    if (temp->data != NULL) {
+        free(temp->data);
+    }
     free(*packet);
-    *packet = 0;
+    *packet = NULL;
 }

@@ -20,20 +20,29 @@ const char* DTMF_names[] = {
 };
 
 int index_getter(char keypad_input){
-    // int index = 0; // Unused
-    if(keypad_input >= '0' && keypad_input <= '9') {
-        return keypad_input - '0'; //UnASCII the input
+    /* Map keypad character to array index matching keypad_names/DTMF_names layout:
+     * 0:'1', 1:'2', 2:'3', 3:'A', 4:'4', 5:'5', 6:'6', 7:'B',
+     * 8:'7', 9:'8', 10:'9', 11:'C', 12:'*'(POINT), 13:'0', 14:'#'(POUND), 15:'D'
+     */
+    switch(keypad_input) {
+        case '1': return 0;
+        case '2': return 1;
+        case '3': return 2;
+        case 'A': return 3;
+        case '4': return 4;
+        case '5': return 5;
+        case '6': return 6;
+        case 'B': return 7;
+        case '7': return 8;
+        case '8': return 9;
+        case '9': return 10;
+        case 'C': return 11;
+        case '*': return 12;  /* POINT/ASTERISK */
+        case '0': return 13;
+        case '#': return 14;  /* POUND */
+        case 'D': return 15;
+        default:  return -1;
     }
-    if(keypad_input >= 'A' && keypad_input <= 'D') {
-        return keypad_input - '1'; //Now THIS is unmaintainable code
-    }
-    if(keypad_input == '#') {
-        return 14;
-    }
-    if(keypad_input == '*') {
-        return 15;
-    }
-    return -1;
 }
 int input_pipe;
 int output_pipe;
@@ -56,10 +65,32 @@ Inst_packet* read_from_pipe(){
     Packet_type type;
     unsigned short size;
     unsigned short tag;
-    read(input_pipe, &type, sizeof(Packet_type));
-    read(input_pipe, &size, sizeof(unsigned short));
-    read(input_pipe, &tag, sizeof(unsigned short));
-    read(input_pipe, buffer, size);
+    ssize_t bytes_read;
+    
+    bytes_read = read(input_pipe, &type, sizeof(Packet_type));
+    if (bytes_read <= 0) {
+        printf("ERROR: Pipe closed or read error (type)\n");
+        return NULL;
+    }
+    
+    bytes_read = read(input_pipe, &size, sizeof(unsigned short));
+    if (bytes_read <= 0) {
+        printf("ERROR: Pipe closed or read error (size)\n");
+        return NULL;
+    }
+    
+    bytes_read = read(input_pipe, &tag, sizeof(unsigned short));
+    if (bytes_read <= 0) {
+        printf("ERROR: Pipe closed or read error (tag)\n");
+        return NULL;
+    }
+    
+    bytes_read = read(input_pipe, buffer, size);
+    if (bytes_read <= 0) {
+        printf("ERROR: Pipe closed or read error (data)\n");
+        return NULL;
+    }
+    
     Inst_packet* temp = create_inst_packet(type, size, buffer, tag);
     return temp;
 }
@@ -100,52 +131,83 @@ int main(){
         Inst_packet* temp = create_inst_packet(new_data, strlen(msg) + 1, (unsigned char*)msg, 0);
         send_packet(temp);
         Inst_packet* audio_packet = read_from_pipe();
+        if (audio_packet == NULL) {
+            printf("ERROR: Failed to read audio response, exiting\n");
+            break;
+        }
         destroy_inst_packet(&audio_packet);
         while(1) { //sue me
             temp = create_inst_packet(keypad, len, &keypad_msg, 0);
             send_packet(temp);
             destroy_inst_packet(&temp);
             Inst_packet* keypad_packet = read_from_pipe();
+            if (keypad_packet == NULL) {
+                printf("ERROR: Failed to read keypad response, exiting\n");
+                goto cleanup;
+            }
             if(keypad_packet->type != KEYPAD) {
-                printf("bruh\n");
+                printf("bruh (got type %d, expected KEYPAD=%d)\n", keypad_packet->type, KEYPAD);
                 destroy_inst_packet(&keypad_packet);
                 continue;
             }
             char keypad_moment = keypad_packet->data[0];
             printf("keypad says %x (%c)\n", keypad_moment, keypad_moment);
             
-            if(keypad_packet->data[0] == 12){
+            /* Handle mode toggle on '*' key */
+            if(keypad_moment == '*'){
                 mode ^= 1;
+                printf("Mode toggled to %s\n", mode ? "DTMF" : "Normal");
                 destroy_inst_packet(&keypad_packet);
                 continue;
             }
+            
+            /* Skip no-key events */
             if(keypad_moment == 0xFF || keypad_moment == '-'){
+                destroy_inst_packet(&keypad_packet);
+                continue;
+            }
+            
+            /* Convert character to array index */
+            int idx = index_getter(keypad_moment);
+            if(idx < 0 || idx >= 16) {
+                printf("Unknown/invalid key: %c (0x%x)\n", keypad_moment, keypad_moment);
                 destroy_inst_packet(&keypad_packet);
                 continue;
             }
             
             char buffer[256];
             if(mode == 0) {
-                printf("Not DTMF\n");
+                printf("Playing: %s\n", keypad_names[idx]);
                 strcpy(buffer, "ppregen_audio/");
-                strcat(buffer, keypad_names[(int)keypad_moment]);
+                strcat(buffer, keypad_names[idx]);
                 temp = create_inst_packet(new_data, strlen(buffer) + 1, (unsigned char*)buffer, 0);
                 send_packet(temp);
                 destroy_inst_packet(&temp);
                 audio_packet = read_from_pipe();
-                destroy_inst_packet(&audio_packet);
+                if (audio_packet != NULL) {
+                    destroy_inst_packet(&audio_packet);
+                }
             } else {
-                printf("DTMF\n");
+                printf("Playing: %s\n", DTMF_names[idx]);
                 strcpy(buffer, "ppregen_audio/");
-                strcat(buffer, DTMF_names[(int)keypad_moment]);
+                strcat(buffer, DTMF_names[idx]);
                 temp = create_inst_packet(new_data, strlen(buffer) + 1, (unsigned char*)buffer, 0);
                 send_packet(temp);
                 destroy_inst_packet(&temp);
                 audio_packet = read_from_pipe();
-                destroy_inst_packet(&audio_packet);
+                if (audio_packet != NULL) {
+                    destroy_inst_packet(&audio_packet);
+                }
             }
+            destroy_inst_packet(&keypad_packet);
             usleep(16670);
         }
         
     }
+
+cleanup:
+    printf("Closing pipes...\n");
+    close(input_pipe);
+    close(output_pipe);
+    return 0;
 }
