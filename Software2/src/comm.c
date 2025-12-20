@@ -5,6 +5,7 @@
  * binary packet protocol defined in Firmware/hampod_firm_packet.h.
  * 
  * Part of Phase 0: Core Infrastructure (Step 1.1, 1.2)
+ * Updated for Router Thread architecture (comm_router_plan.md)
  */
 
 #include <stdio.h>
@@ -13,6 +14,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <pthread.h>
+#include <time.h>
 
 #include "comm.h"
 
@@ -31,6 +34,220 @@
 static int fd_firmware_out = -1;   // File descriptor for reading from Firmware
 static int fd_firmware_in = -1;    // File descriptor for writing to Firmware
 static unsigned short packet_tag = 0;  // Incrementing tag for packet matching
+
+// ============================================================================
+// Response Queue Structure (Thread-safe circular buffer)
+// ============================================================================
+
+typedef struct {
+    CommPacket packets[COMM_RESPONSE_QUEUE_SIZE];
+    int head;                      // Index of first item
+    int tail;                      // Index of next empty slot
+    int count;                     // Current number of items
+    pthread_mutex_t mutex;         // Protects queue access
+    pthread_cond_t not_empty;      // Signaled when item added
+} ResponseQueue;
+
+// Response queues for each packet type
+static ResponseQueue keypad_queue;
+static ResponseQueue audio_queue;
+static ResponseQueue config_queue;
+
+// Router thread state
+static pthread_t router_thread;
+static volatile bool router_running = false;
+
+// ============================================================================
+// Response Queue Functions
+// ============================================================================
+
+static void response_queue_init(ResponseQueue* q) {
+    q->head = 0;
+    q->tail = 0;
+    q->count = 0;
+    pthread_mutex_init(&q->mutex, NULL);
+    pthread_cond_init(&q->not_empty, NULL);
+}
+
+static void response_queue_destroy(ResponseQueue* q) {
+    pthread_mutex_destroy(&q->mutex);
+    pthread_cond_destroy(&q->not_empty);
+}
+
+static int response_queue_push(ResponseQueue* q, const CommPacket* packet) {
+    pthread_mutex_lock(&q->mutex);
+    
+    if (q->count >= COMM_RESPONSE_QUEUE_SIZE) {
+        // Queue full - drop oldest packet (overwrite head)
+        LOG_ERROR("Response queue full, dropping oldest packet");
+        q->head = (q->head + 1) % COMM_RESPONSE_QUEUE_SIZE;
+        q->count--;
+    }
+    
+    // Add packet to tail
+    q->packets[q->tail] = *packet;
+    q->tail = (q->tail + 1) % COMM_RESPONSE_QUEUE_SIZE;
+    q->count++;
+    
+    // Signal that queue is not empty
+    pthread_cond_signal(&q->not_empty);
+    
+    pthread_mutex_unlock(&q->mutex);
+    return HAMPOD_OK;
+}
+
+static int response_queue_pop_timeout(ResponseQueue* q, CommPacket* packet, int timeout_ms) {
+    pthread_mutex_lock(&q->mutex);
+    
+    // Wait for item with timeout
+    while (q->count == 0 && router_running) {
+        struct timespec timeout;
+        clock_gettime(CLOCK_REALTIME, &timeout);
+        
+        // Add timeout_ms to current time
+        timeout.tv_sec += timeout_ms / 1000;
+        timeout.tv_nsec += (timeout_ms % 1000) * 1000000;
+        if (timeout.tv_nsec >= 1000000000) {
+            timeout.tv_sec += 1;
+            timeout.tv_nsec -= 1000000000;
+        }
+        
+        int result = pthread_cond_timedwait(&q->not_empty, &q->mutex, &timeout);
+        if (result == ETIMEDOUT) {
+            pthread_mutex_unlock(&q->mutex);
+            return HAMPOD_TIMEOUT;
+        }
+    }
+    
+    if (!router_running && q->count == 0) {
+        pthread_mutex_unlock(&q->mutex);
+        return HAMPOD_ERROR;
+    }
+    
+    if (q->count == 0) {
+        pthread_mutex_unlock(&q->mutex);
+        return HAMPOD_NOT_FOUND;
+    }
+    
+    // Remove packet from head
+    *packet = q->packets[q->head];
+    q->head = (q->head + 1) % COMM_RESPONSE_QUEUE_SIZE;
+    q->count--;
+    
+    pthread_mutex_unlock(&q->mutex);
+    return HAMPOD_OK;
+}
+
+// ============================================================================
+// Router Thread
+// ============================================================================
+
+static void* router_thread_func(void* arg) {
+    (void)arg;
+    
+    LOG_INFO("Router thread started");
+    
+    while (router_running) {
+        CommPacket packet;
+        int result = comm_read_packet(&packet);
+        
+        if (result != HAMPOD_OK) {
+            if (!router_running) break;  // Expected shutdown
+            LOG_ERROR("Router: Pipe read failed, retrying...");
+            usleep(100000);  // 100ms before retry
+            continue;
+        }
+        
+        switch (packet.type) {
+            case PACKET_KEYPAD:
+                if (response_queue_push(&keypad_queue, &packet) != HAMPOD_OK) {
+                    LOG_ERROR("Router: Keypad queue full, dropping packet");
+                }
+                break;
+            case PACKET_AUDIO:
+                if (response_queue_push(&audio_queue, &packet) != HAMPOD_OK) {
+                    LOG_ERROR("Router: Audio queue full, dropping packet");
+                }
+                break;
+            case PACKET_CONFIG:
+                if (response_queue_push(&config_queue, &packet) != HAMPOD_OK) {
+                    LOG_ERROR("Router: Config queue full, dropping packet");
+                }
+                break;
+            default:
+                LOG_ERROR("Router: Unknown packet type %d", packet.type);
+                break;
+        }
+    }
+    
+    LOG_INFO("Router thread exiting");
+    return NULL;
+}
+
+int comm_start_router(void) {
+    if (router_running) {
+        LOG_ERROR("Router already running");
+        return HAMPOD_ERROR;
+    }
+    
+    LOG_INFO("Starting router thread...");
+    
+    // Initialize response queues
+    response_queue_init(&keypad_queue);
+    response_queue_init(&audio_queue);
+    response_queue_init(&config_queue);
+    
+    // Start router thread
+    router_running = true;
+    if (pthread_create(&router_thread, NULL, router_thread_func, NULL) != 0) {
+        LOG_ERROR("Failed to create router thread");
+        router_running = false;
+        return HAMPOD_ERROR;
+    }
+    
+    LOG_INFO("Router thread started");
+    return HAMPOD_OK;
+}
+
+void comm_stop_router(void) {
+    if (!router_running) {
+        return;
+    }
+    
+    LOG_INFO("Stopping router thread...");
+    
+    // Signal thread to stop
+    router_running = false;
+    
+    // Wake up any threads waiting on queues
+    pthread_cond_broadcast(&keypad_queue.not_empty);
+    pthread_cond_broadcast(&audio_queue.not_empty);
+    pthread_cond_broadcast(&config_queue.not_empty);
+    
+    // Wait for thread to finish
+    // Note: pthread_join is blocking, but router_running=false should cause
+    // the thread to exit quickly after its next read attempt
+    pthread_join(router_thread, NULL);
+    
+    // Destroy queues
+    response_queue_destroy(&keypad_queue);
+    response_queue_destroy(&audio_queue);
+    response_queue_destroy(&config_queue);
+    
+    LOG_INFO("Router thread stopped");
+}
+
+bool comm_router_is_running(void) {
+    return router_running;
+}
+
+int comm_wait_keypad_response(CommPacket* packet, int timeout_ms) {
+    return response_queue_pop_timeout(&keypad_queue, packet, timeout_ms);
+}
+
+int comm_wait_audio_response(CommPacket* packet, int timeout_ms) {
+    return response_queue_pop_timeout(&audio_queue, packet, timeout_ms);
+}
 
 // ============================================================================
 // Initialization & Cleanup
@@ -72,11 +289,19 @@ int comm_init(void) {
     LOG_DEBUG("Opened %s (fd=%d)", FIRMWARE_INPUT_PIPE, fd_firmware_in);
     
     LOG_INFO("Firmware communication initialized successfully");
+    
+    // Note: Router is NOT started here - it's started after comm_wait_ready()
+    // because we need to read the ready packet directly first
     return HAMPOD_OK;
 }
 
 void comm_close(void) {
     LOG_INFO("Closing Firmware communication...");
+    
+    // Stop router thread first (if running)
+    if (router_running) {
+        comm_stop_router();
+    }
     
     if (fd_firmware_out != -1) {
         close(fd_firmware_out);
@@ -98,6 +323,7 @@ bool comm_is_connected(void) {
 int comm_wait_ready(void) {
     LOG_INFO("Waiting for Firmware ready signal...");
     
+    // Read the ready packet directly (router not started yet)
     CommPacket packet;
     if (comm_read_packet(&packet) != HAMPOD_OK) {
         LOG_ERROR("Failed to read ready packet");
@@ -112,6 +338,13 @@ int comm_wait_ready(void) {
     
     if (packet.data_len > 0 && packet.data[0] == 'R') {
         LOG_INFO("Firmware ready!");
+        
+        // NOW start the router thread (after ready signal received)
+        if (comm_start_router() != HAMPOD_OK) {
+            LOG_ERROR("Failed to start router thread");
+            return HAMPOD_ERROR;
+        }
+        
         return HAMPOD_OK;
     }
     
@@ -196,39 +429,29 @@ int comm_read_keypad(char* key_out) {
         return HAMPOD_ERROR;
     }
     
-    // Wait for response - may need to skip AUDIO responses from speech thread
+    // Wait for response from router queue
     CommPacket response;
-    int retries = 10;  // Max retries to find our response
+    int result = comm_wait_keypad_response(&response, COMM_KEYPAD_TIMEOUT_MS);
     
-    while (retries-- > 0) {
-        if (comm_read_packet(&response) != HAMPOD_OK) {
-            return HAMPOD_ERROR;
-        }
-        
-        // If it's our KEYPAD response, process it
-        if (response.type == PACKET_KEYPAD) {
-            if (response.data_len > 0) {
-                *key_out = (char)response.data[0];
-            } else {
-                *key_out = '-';  // No key
-            }
-            
-            LOG_DEBUG("comm_read_keypad: key='%c' (0x%02X)", *key_out, (unsigned char)*key_out);
-            return HAMPOD_OK;
-        }
-        
-        // Skip AUDIO responses (they're for the speech thread)
-        if (response.type == PACKET_AUDIO) {
-            LOG_DEBUG("comm_read_keypad: Skipping AUDIO response (tag=%u)", response.tag);
-            continue;
-        }
-        
-        // Unexpected packet type
-        LOG_DEBUG("comm_read_keypad: Skipping unexpected type=%d", response.type);
+    if (result == HAMPOD_TIMEOUT) {
+        LOG_ERROR("comm_read_keypad: Timeout waiting for response");
+        return HAMPOD_TIMEOUT;
     }
     
-    LOG_ERROR("comm_read_keypad: No KEYPAD response after %d packets", 10);
-    return HAMPOD_ERROR;
+    if (result != HAMPOD_OK) {
+        LOG_ERROR("comm_read_keypad: Failed to get response");
+        return HAMPOD_ERROR;
+    }
+    
+    // Extract key from response
+    if (response.data_len > 0) {
+        *key_out = (char)response.data[0];
+    } else {
+        *key_out = '-';  // No key
+    }
+    
+    LOG_DEBUG("comm_read_keypad: key='%c' (0x%02X)", *key_out, (unsigned char)*key_out);
+    return HAMPOD_OK;
 }
 
 // ============================================================================

@@ -197,14 +197,24 @@ static void* speech_thread_func(void* arg) {
         
         LOG_DEBUG("Speaking: type='%c', payload='%s'", item.type, item.payload);
         
-        // Send to Firmware (non-blocking, don't wait for response)
-        // Note: We use non-blocking send because keypad thread also reads responses
+        // Send audio request to Firmware
         if (comm_send_audio(item.type, item.payload) != HAMPOD_OK) {
             LOG_ERROR("Failed to send audio: %s", item.payload);
+            continue;
         }
         
-        // Brief delay to let audio play (simple throttle)
-        usleep(100000);  // 100ms
+        // Wait for audio acknowledgment from router queue
+        // This ensures proper sequencing without blocking keypad thread
+        CommPacket response;
+        int result = comm_wait_audio_response(&response, COMM_AUDIO_TIMEOUT_MS);
+        
+        if (result == HAMPOD_TIMEOUT) {
+            LOG_ERROR("Timeout waiting for audio acknowledgment: %s", item.payload);
+        } else if (result != HAMPOD_OK) {
+            LOG_ERROR("Failed to get audio acknowledgment: %s", item.payload);
+        } else {
+            LOG_DEBUG("Audio acknowledged: %s", item.payload);
+        }
     }
     
     LOG_INFO("Speech thread exiting");

@@ -143,4 +143,59 @@ int comm_send_audio(char audio_type, const char* payload);
  */
 int comm_send_audio_sync(char audio_type, const char* payload);
 
+// ============================================================================
+// Router Thread (dispatches responses to type-specific queues)
+// ============================================================================
+
+// Response queue size for each packet type
+#define COMM_RESPONSE_QUEUE_SIZE 16
+
+// Timeout values for waiting on responses (in milliseconds)
+#define COMM_KEYPAD_TIMEOUT_MS   5000   // 5 seconds for keypad
+#define COMM_AUDIO_TIMEOUT_MS    30000  // 30 seconds for audio (speech can be long)
+
+/**
+ * Start the router thread.
+ * 
+ * The router thread reads ALL packets from Firmware_o and dispatches them
+ * to type-specific queues. This allows keypad and speech threads to operate
+ * concurrently without packet conflicts.
+ * 
+ * Called automatically by comm_init().
+ * 
+ * @return HAMPOD_OK on success, HAMPOD_ERROR on failure
+ */
+int comm_start_router(void);
+
+/**
+ * Stop the router thread.
+ * 
+ * Called automatically by comm_close().
+ */
+void comm_stop_router(void);
+
+/**
+ * Check if the router thread is running.
+ * @return true if router is active, false otherwise
+ */
+bool comm_router_is_running(void);
+
+/**
+ * Wait for a KEYPAD response packet from the router queue.
+ * 
+ * @param packet Pointer to packet structure to fill
+ * @param timeout_ms Maximum time to wait (use COMM_KEYPAD_TIMEOUT_MS)
+ * @return HAMPOD_OK on success, HAMPOD_TIMEOUT on timeout, HAMPOD_ERROR on failure
+ */
+int comm_wait_keypad_response(CommPacket* packet, int timeout_ms);
+
+/**
+ * Wait for an AUDIO response packet from the router queue.
+ * 
+ * @param packet Pointer to packet structure to fill
+ * @param timeout_ms Maximum time to wait (use COMM_AUDIO_TIMEOUT_MS)
+ * @return HAMPOD_OK on success, HAMPOD_TIMEOUT on timeout, HAMPOD_ERROR on failure
+ */
+int comm_wait_audio_response(CommPacket* packet, int timeout_ms);
+
 #endif // COMM_H
