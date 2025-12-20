@@ -92,6 +92,9 @@ int main() {
     printf("\nSystem Ready!\n");
     printf("Press any key on the keypad. The Pi should speak the key name.\n\n");
     
+    /* Speak the startup announcement */
+    hal_tts_speak("System ready. Press any key.", NULL);
+    
     /* Hold detection state */
     char last_key = '-';
     int hold_count = 0;
