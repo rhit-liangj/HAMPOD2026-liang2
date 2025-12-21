@@ -409,7 +409,7 @@ git push --force-with-lease
 - [x] Step 2: Implement response queues ✅ (2025-12-20)
 - [x] Step 3: Implement router thread ✅ (2025-12-20)
 - [x] Step 4: Implement blocking queue readers ✅ (2025-12-20)
-- [ ] Step 5: Create unit test for queue
+- [x] Step 5: Create unit test for queue ✅ (2025-12-21)
 - [x] Step 6: Update comm_read_keypad() ✅ (2025-12-20)
 - [x] Step 7: Update speech.c ✅ (2025-12-20)
 - [x] Step 8: Update comm_init()/comm_close() ✅ (2025-12-20)
