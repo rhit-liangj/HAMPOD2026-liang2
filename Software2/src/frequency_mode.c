@@ -55,17 +55,34 @@ static void announce_digit(char digit) {
 
 static void announce_frequency(double freq_hz) {
     // Convert Hz to MHz and format for speech
+    // Need 5 decimal places for 10 Hz resolution (e.g., 14.25000)
     double freq_mhz = freq_hz / 1000000.0;
     
-    // Format as "14 point 250 megahertz"
-    char text[64];
+    // Format as "14 point 2 5 0 0 0 megahertz" (spell out decimals)
+    char text[128];
     int mhz_part = (int)freq_mhz;
-    int khz_part = (int)((freq_mhz - mhz_part) * 1000 + 0.5);
     
-    if (khz_part == 0) {
+    // Get 5 decimal places (100 Hz resolution = 5 digits after decimal)
+    // e.g., 14.250000 MHz -> decimals = 25000
+    int decimals = (int)((freq_mhz - mhz_part) * 100000 + 0.5);
+    
+    if (decimals == 0) {
         snprintf(text, sizeof(text), "%d megahertz", mhz_part);
     } else {
-        snprintf(text, sizeof(text), "%d point %03d megahertz", mhz_part, khz_part);
+        // Spell out each decimal digit for clarity
+        // e.g., 14.25000 -> "14 point 2 5 0 0 0 megahertz"
+        char decimal_str[16];
+        snprintf(decimal_str, sizeof(decimal_str), "%05d", decimals);
+        
+        // Build spoken string with spaces between digits
+        char spoken_decimals[32] = "";
+        for (int i = 0; i < 5; i++) {
+            char digit[4];
+            snprintf(digit, sizeof(digit), "%c ", decimal_str[i]);
+            strcat(spoken_decimals, digit);
+        }
+        
+        snprintf(text, sizeof(text), "%d point %s megahertz", mhz_part, spoken_decimals);
     }
     
     speech_say_text(text);
@@ -103,7 +120,7 @@ static void submit_frequency(void) {
     
     // Set frequency on radio
     if (radio_set_frequency(freq_hz) == 0) {
-        speech_say_text("Frequency set");
+        // Just announce the frequency (no separate "Frequency set" message)
         announce_frequency(freq_hz);
     } else {
         speech_say_text("Failed to set frequency");
