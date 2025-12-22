@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 
 // ============================================================================
 // Module State
@@ -27,6 +28,10 @@ static VfoSelection g_selected_vfo = VFO_CURRENT;
 static char g_freq_buffer[MAX_FREQ_DIGITS + 1];
 static int g_freq_len = 0;
 static bool g_has_decimal = false;
+
+// Inactivity timeout (seconds)
+#define FREQ_MODE_TIMEOUT_SEC 10
+static time_t g_last_activity = 0;
 
 // ============================================================================
 // Internal Helpers
@@ -150,12 +155,26 @@ bool frequency_mode_handle_key(char key, bool is_hold) {
     
     DEBUG_PRINT("frequency_mode_handle_key: key='%c' state=%d\n", key, g_state);
     
+    // Check for timeout if in frequency mode
+    if (g_state != FREQ_MODE_IDLE) {
+        time_t now = time(NULL);
+        if (now - g_last_activity > FREQ_MODE_TIMEOUT_SEC) {
+            DEBUG_PRINT("frequency_mode: Timeout - cancelling\n");
+            clear_freq_buffer();
+            g_state = FREQ_MODE_IDLE;
+            speech_say_text("Timeout");
+            return true;  // Consume key, announce timeout
+        }
+        g_last_activity = now;  // Update activity timestamp
+    }
+    
     switch (g_state) {
         case FREQ_MODE_IDLE:
             // Not in frequency mode - check for entry key
             if (key == '#') {
                 // Enter frequency mode
                 g_state = FREQ_MODE_SELECT_VFO;
+                g_last_activity = time(NULL);  // Start timeout clock
                 speech_say_text(vfo_name(g_selected_vfo));
                 return true;
             }
