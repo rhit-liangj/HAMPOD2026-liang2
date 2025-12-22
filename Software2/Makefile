@@ -30,7 +30,10 @@ directories:
 	@mkdir -p $(OBJ_DIR)
 	@mkdir -p $(BIN_DIR)
 
-$(TARGET): $(OBJS)
+# Main objects - exclude main_phase0.o (it's for phase0_test only)
+MAIN_OBJS = $(filter-out $(OBJ_DIR)/main_phase0.o, $(OBJS))
+
+$(TARGET): $(MAIN_OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
