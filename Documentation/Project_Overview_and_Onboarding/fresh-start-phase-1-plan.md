@@ -135,13 +135,13 @@ Update `main.c`, merge feature branch to main.
 
 ## Execution Checklist
 
-- [ ] **Chunk 1** Documentation Updates
-- [ ] **Chunk 2** Radio Module Skeleton
-- [ ] **Chunk 3** Radio Connect/Disconnect
-- [ ] **Chunk 4** Get/Set Frequency
-- [ ] **Chunk 5** Radio Polling Thread
-- [ ] **Chunk 6** Frequency Mode Skeleton
-- [ ] **Chunk 7** Frequency Entry State Machine
-- [ ] **Chunk 8** Audio Integration
-- [ ] **Chunk 9** Regression Testing
-- [ ] **Chunk 10** Final Integration & Merge
+- [x] **Chunk 1** Documentation Updates ✅ (2025-12-21)
+- [x] **Chunk 2** Radio Module Skeleton ✅ (2025-12-21)
+- [x] **Chunk 3** Radio Connect/Disconnect ✅ (2025-12-21)
+- [x] **Chunk 4** Get/Set Frequency ✅ (2025-12-21)
+- [x] **Chunk 5** Radio Polling Thread ✅ (2025-12-21)
+- [x] **Chunk 6** Frequency Mode Skeleton ✅ (2025-12-21)
+- [x] **Chunk 7** Frequency Entry State Machine ✅ (2025-12-21)
+- [x] **Chunk 8** Audio Integration ✅ (2025-12-21)
+- [x] **Chunk 9** Regression Testing ✅ (2025-12-21)
+- [ ] **Chunk 10** Final Integration & Merge ⏳ (requires RPi testing)
