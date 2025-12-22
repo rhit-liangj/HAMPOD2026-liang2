@@ -1,5 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -pthread -I./include
+LDFLAGS = -lhamlib -lpthread
 SRC_DIR = src
 OBJ_DIR = obj
 BIN_DIR = bin
@@ -23,14 +24,14 @@ all: directories $(TARGET)
 tests: directories $(TEST_BINS)
 
 phase0_test: directories $(filter-out $(OBJ_DIR)/main.o $(OBJ_DIR)/main_phase0.o, $(OBJS))
-	$(CC) $(CFLAGS) -o $(BIN_DIR)/phase0_test $(SRC_DIR)/main_phase0.c $(filter-out $(OBJ_DIR)/main.o $(OBJ_DIR)/main_phase0.o, $(OBJS))
+	$(CC) $(CFLAGS) -o $(BIN_DIR)/phase0_test $(SRC_DIR)/main_phase0.c $(filter-out $(OBJ_DIR)/main.o $(OBJ_DIR)/main_phase0.o, $(OBJS)) $(LDFLAGS)
 
 directories:
 	@mkdir -p $(OBJ_DIR)
 	@mkdir -p $(BIN_DIR)
 
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -39,7 +40,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 $(BIN_DIR)/test_%: $(TEST_DIR)/test_%.c $(OBJS)
 	# Compile test with all objects EXCEPT main.o (if main exists)
 	# For now, we link everything since we are in Phase 0 modularity
-	$(CC) $(CFLAGS) -o $@ $< $(filter-out $(OBJ_DIR)/main.o $(OBJ_DIR)/main_phase0.o, $(OBJS))
+	$(CC) $(CFLAGS) -o $@ $< $(filter-out $(OBJ_DIR)/main.o $(OBJ_DIR)/main_phase0.o, $(OBJS)) $(LDFLAGS)
 
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
