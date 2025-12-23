@@ -7,6 +7,7 @@
 
 #include "frequency_mode.h"
 #include "radio.h"
+#include "radio_queries.h"
 #include "speech.h"
 #include "hampod_core.h"
 
@@ -124,10 +125,21 @@ static void submit_frequency(void) {
         return;
     }
     
-    DEBUG_PRINT("submit_frequency: %.3f MHz\n", freq_hz / 1000000.0);
+    DEBUG_PRINT("submit_frequency: %.3f MHz to %s\n", freq_hz / 1000000.0, vfo_name(g_selected_vfo));
     
     // Suppress the polling announcement for this frequency change
     g_suppress_next_poll = true;
+    
+    // Switch to selected VFO first (if not current)
+    if (g_selected_vfo != VFO_CURRENT) {
+        RadioVfo target_vfo = (g_selected_vfo == VFO_A) ? RADIO_VFO_A : RADIO_VFO_B;
+        if (radio_set_vfo(target_vfo) != 0) {
+            speech_say_text("VFO switch failed");
+            clear_freq_buffer();
+            g_state = FREQ_MODE_IDLE;
+            return;
+        }
+    }
     
     // Set frequency on radio
     if (radio_set_frequency(freq_hz) == 0) {
@@ -295,4 +307,9 @@ void frequency_mode_on_radio_change(double new_freq) {
         DEBUG_PRINT("frequency_mode_on_radio_change: %.3f MHz\n", new_freq / 1000000.0);
         announce_frequency(new_freq);
     }
+}
+
+void frequency_mode_suppress_next_poll(void) {
+    g_suppress_next_poll = true;
+    DEBUG_PRINT("frequency_mode_suppress_next_poll: armed\n");
 }

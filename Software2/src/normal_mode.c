@@ -101,6 +101,8 @@ bool normal_mode_handle_key(char key, bool is_hold) {
     if (key == '1') {
         if (!is_hold) {
             // Select VFO A
+            // Suppress polling announcement since we'll announce ourselves
+            frequency_mode_suppress_next_poll();
             if (radio_set_vfo(RADIO_VFO_A) == 0) {
                 speech_say_text("VFO A");
                 announce_frequency();
@@ -109,6 +111,7 @@ bool normal_mode_handle_key(char key, bool is_hold) {
             }
         } else {
             // Select VFO B
+            frequency_mode_suppress_next_poll();
             if (radio_set_vfo(RADIO_VFO_B) == 0) {
                 speech_say_text("VFO B");
                 announce_frequency();
