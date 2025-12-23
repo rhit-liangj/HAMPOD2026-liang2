@@ -419,16 +419,16 @@ git push
 
 ## Execution Checklist
 
-- [ ] **Chunk 1** Documentation & Branch
-- [ ] **Chunk 2** Radio Queries Module Skeleton
-- [ ] **Chunk 3** Radio Queries Implementation
-- [ ] **Chunk 4** Normal Mode Skeleton
-- [ ] **Chunk 5** Core Query Keys Implementation
-- [ ] **Chunk 6** Extended Polling
-- [ ] **Chunk 7** Integrate with Main
-- [ ] **Chunk 8** Verbosity Toggle [C] Key
-- [ ] **Chunk 9** Regression Test Script
-- [ ] **Chunk 10** Manual Integration Test
+- [x] **Chunk 1** Documentation & Branch
+- [x] **Chunk 2** Radio Queries Module Skeleton
+- [x] **Chunk 3** Radio Queries Implementation
+- [x] **Chunk 4** Normal Mode Skeleton
+- [x] **Chunk 5** Core Query Keys Implementation
+- [ ] **Chunk 6** Extended Polling (deferred - frequency polling already works)
+- [x] **Chunk 7** Integrate with Main
+- [x] **Chunk 8** Verbosity Toggle [C] Key
+- [x] **Chunk 9** Regression Test Script
+- [x] **Chunk 10** Manual Integration Test
 - [ ] **Chunk 11** Regression Testing & Merge
 
 ---
