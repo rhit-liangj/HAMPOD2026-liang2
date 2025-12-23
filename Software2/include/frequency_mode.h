@@ -93,4 +93,12 @@ void frequency_mode_cancel(void);
  */
 void frequency_mode_on_radio_change(double new_freq);
 
+/**
+ * @brief Suppress the next polling announcement
+ * 
+ * Call before changing VFO/frequency programmatically to prevent
+ * a duplicate announcement when polling detects the change.
+ */
+void frequency_mode_suppress_next_poll(void);
+
 #endif // FREQUENCY_MODE_H
