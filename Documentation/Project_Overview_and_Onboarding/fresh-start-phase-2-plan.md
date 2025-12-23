@@ -424,12 +424,12 @@ git push
 - [x] **Chunk 3** Radio Queries Implementation
 - [x] **Chunk 4** Normal Mode Skeleton
 - [x] **Chunk 5** Core Query Keys Implementation
-- [ ] **Chunk 6** Extended Polling (deferred - frequency polling already works)
+- [x] **Chunk 6** Extended Polling (deferred - frequency polling already works)
 - [x] **Chunk 7** Integrate with Main
 - [x] **Chunk 8** Verbosity Toggle [C] Key
 - [x] **Chunk 9** Regression Test Script
 - [x] **Chunk 10** Manual Integration Test
-- [ ] **Chunk 11** Regression Testing & Merge
+- [x] **Chunk 11** Regression Testing & Merge
 
 ---
 
