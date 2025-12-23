@@ -145,6 +145,7 @@ Currently, the primary component to build is the **Firmware** (which handles har
 ### Build Firmware (RPI:)
 ```bash
 cd ~/HAMPOD2026/Firmware
+make clean   # Remove any stale object files (prevents architecture mismatch errors)
 make
 ```
 *If successful, you will see a `firmware.elf` file created.*
