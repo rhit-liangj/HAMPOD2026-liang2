@@ -2,7 +2,7 @@
  * @file main.c
  * @brief HAMPOD2026 Software2 Main Entry Point
  * 
- * Integrates all modules for frequency and normal mode operation:
+ * Integrates all modules for frequency, normal, and set mode operation:
  * - Config module for settings
  * - Comm module for Firmware communication
  * - Speech module for audio feedback
@@ -10,8 +10,9 @@
  * - Radio module for Hamlib control
  * - Frequency mode for keypad frequency entry
  * - Normal mode for radio queries and status
+ * - Set mode for adjusting radio parameters
  * 
- * Part of Phase 1/2: Frequency Mode and Normal Mode Implementation
+ * Part of Phase 1/2/3: Frequency Mode, Normal Mode, Set Mode
  */
 
 #include <stdio.h>
@@ -28,6 +29,7 @@
 #include "radio.h"
 #include "frequency_mode.h"
 #include "normal_mode.h"
+#include "set_mode.h"
 
 // ============================================================================
 // Signal Handling
@@ -45,18 +47,39 @@ static void signal_handler(int sig) {
 // Keypad Callback
 // ============================================================================
 
+// Shift state for Set Mode (toggled by [A] key)
+static bool g_shift_active = false;
+
 static void on_keypress(const KeyPressEvent* kp) {
     DEBUG_PRINT("main: Key '%c' hold=%d shift=%d\n", kp->key, kp->isHold, kp->shiftAmount);
     
-    // Route to frequency mode first
-    if (frequency_mode_handle_key(kp->key, kp->isHold)) {
-        // Key consumed by frequency mode
+    // Handle [A] key for shift toggle
+    if (kp->key == 'A' && !kp->isHold) {
+        g_shift_active = !g_shift_active;
+        speech_say_text(g_shift_active ? "Shift" : "Shift off");
         return;
     }
     
-    // Route to normal mode
+    // Route to set mode first (if active, it takes priority)
+    if (set_mode_is_active()) {
+        if (set_mode_handle_key(kp->key, kp->isHold, g_shift_active)) {
+            return;
+        }
+    }
+    
+    // [B] key enters Set Mode when not active
+    if (kp->key == 'B' && !kp->isHold && !set_mode_is_active()) {
+        set_mode_enter();
+        return;
+    }
+    
+    // Route to frequency mode
+    if (frequency_mode_handle_key(kp->key, kp->isHold)) {
+        return;
+    }
+    
+    // Route to normal mode (pass shift state)
     if (normal_mode_handle_key(kp->key, kp->isHold)) {
-        // Key consumed by normal mode
         return;
     }
     
@@ -167,6 +190,9 @@ int main(int argc, char *argv[]) {
     
     // Initialize normal mode
     normal_mode_init();
+    
+    // Initialize set mode
+    set_mode_init();
     
     // Announce startup
     printf("\nStartup complete. Normal mode active.\n");
