@@ -28,40 +28,43 @@ The project is currently being developed on **Debian Trixie**. Please install th
     - **Choose Device**: Select your RPi model (e.g., Raspberry Pi 5).
     - **Choose OS**:
         - Click "Choose OS".
-        - Select **General Purpose OS** -> **Debian** -> **Debian Trixie** (or the specific Trixie image if listed differently).
-    - **Choose Storage**: Select your microSD card.
+        - Select  **Debian** -> **Raspberry Pi OS (64-bit) - (debian trixie)** (or the specific Trixie image if listed differently).
+    - **Choose Storage**: Select your microSD card. (it should be plugged in and visible in the list), if it is not visible, make sure it is plugged in and try again.
+    - **Choose hostname: `hampod` (or whatever you prefer).
+    - enter your localization settings. (capital city washington for USA based, new york for timezone )
+    - click "Next".
+    - set your username and password. (you can also use hampod for this as well)
+    - set your password to something strong (diceware is a good option)
+    - click "Next".
+    - enter your Wi-Fi SSID and password (if not using Ethernet)
+    - click "Next".
+    - make sure to enable SSH
+    - if you can, use public key authentication, it makes everything easier for passwordless login
+    - if you can't use public key authentication, use password authentication
+    - click "Next".
+    - leave raspberry pi connect disabled
+    - click "Next".
+    - click "Write".
+    - confirm the write and make absolutely sure its the correct drive - you will destroy all data on the drive when it writes
+    - wait for it to complete, it will take a few minutes
+    - once it's done, remove the microSD card and insert it into your RPi
+    - power on the RPi
+    - wait for it to boot up
+    -  **(DEV:)** Connect using the hostname and username you set:
+    ```bash
+    ssh hampod@hampod.local
+    ```
+    *(If prompted about authenticity, type `yes`)*
+    - if you used public key authentication, you should be able to connect without a password
+    - if you used password authentication, you will be prompted for a password
+    - once connected, you should see the terminal prompt for the user you created
 
-3.  **Advanced Options (Crucial Step)**:
-    - Click "Next". When asked "Would you like to apply OS customisation settings?", verify **EDIT SETTINGS**.
-    - **General Tab**:
-        - **Set hostname**: `HAMPOD` (or whatever you prefer, this guide assumes `HAMPOD.local`).
-        - **Set username and password**:
-            - Username: `hampoduser`
-            - Password: Choose a secure password.
-        - **Configure Wireless LAN**: Enter your Wi-Fi SSID and password (if not using Ethernet).
-    - **Services Tab**:
-        - **Enable SSH**: Check "Use password authentication".
-    - Click **SAVE** and then **YES** to apply.
 
-4.  **Write and Verify**:
-    - Click **YES** to begin writing. This will erase the SD card.
-    - Once finished, insert the SD card into your Raspberry Pi and power it on.
+> **Troubleshooting**: If `hampod.local` doesn't work, check your router's device list to find the IP address of the Pi and use `ssh hampod@192.168.x.x` instead.
 
 ---
 
-## 🔌 Step 2: Connect via SSH
-
-Give your Pi a minute or two to boot up and connect to the network.
-
-1.  Open a terminal (Command Prompt or PowerShell on Windows, Terminal on Mac/Linux).
-2.  **(DEV:)** Connect using the hostname and username you set:
-    ```bash
-    ssh hampoduser@HAMPOD.local
-    ```
-    *(If prompted about authenticity, type `yes`)*
-3.  Enter your password when prompted.
-
-> **Troubleshooting**: If `HAMPOD.local` doesn't work, check your router's device list to find the IP address of the Pi and use `ssh hampoduser@192.168.x.x` instead.
+TODO: fix this section 2025-12-27--12-31-PM 
 
 ### Optional: Set up an SSH Key
 To avoid typing your password every time, you can generate an SSH key on your computer and copy it to the Pi.
@@ -164,15 +167,31 @@ The recommended way to verify your Raspberry Pi setup is to run the **HAL Integr
 
 2.  **(RPI:)** **Run the Test** (from the Firmware directory, required for model paths):
     ```bash
-    cd ~/HAMPOD2026/Firmware
-    sudo hal/tests/test_hal_integration
+    cd ~/HAMPOD2026/Documentation/scripts
+    ./Regression_HAL_Integration.sh
     ```
 
-3.  **What to Expect**:
-    - The system should announce **"System Ready"** (or similar) via the speaker.
-    - Pressing keys on the keypad should announce the key name (e.g., "One", "Enter").
-    - Use `Ctrl+C` to exit.
-    - *This confirms that your hardware, audio drivers, and Piper TTS are all correctly configured.*
+    List of tests that generate audio but do not need the radio plugged in:
+
+    - **Regression_Phase0_Integration.sh**: Tests the router thread and basic keypad/audio interaction.
+        - **What to Expect**:
+            - The system should announce **"System Ready"** (or similar).
+            - Pressing keys should announce **"You pressed [Key Name]"** (e.g., "You pressed One").
+            - Holding keys should announce **"You held [Key Name]"**.
+            - Use `Ctrl+C` to exit (or wait for timeout).
+
+    - **Regression_Imitation_Software.sh**: Tests the low-level pipe communication between Firmware and Software.
+        - **What to Expect**:
+            - You should hear an initial TTS announcement.
+            - Pressing keys will trigger audio feedback.
+            - Use `Ctrl+C` to exit (or wait for timeout).
+
+    - **Regression_HAL_Integration.sh**: Verifies the hardware abstraction layer for keypad and audio/TTS.
+        - **What to Expect**:
+            - The system should announce **"System Ready"** (or similar).
+            - Pressing keys on the keypad should announce the key name (e.g., "One", "Enter").
+            - Use `Ctrl+C` to exit (or wait for timeout).
+
 
 > **If you only hear a click sound (no speech)**, see the **Troubleshooting Audio/TTS** section below.
 
@@ -180,20 +199,6 @@ The recommended way to verify your Raspberry Pi setup is to run the **HAL Integr
 
 Once the Software layer development is complete, you will run Firmware and Software in separate terminals:
 
-1.  **(RPI:)** **Start Firmware**:
-    ```bash
-    cd ~/HAMPOD2026/Firmware
-    sudo ./firmware.elf
-    ```
-
-2.  **(RPI:)** **Start Software** (in a new SSH session):
-    ```bash
-    cd ~/HAMPOD2026/Software2
-    ./bin/hampod
-    ```
-    *Note: The Software layer (`Software2/`) is under active development. Check its README for current build instructions.*
-
----
 
 ## 🔧 Troubleshooting Audio/TTS
 
