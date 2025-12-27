@@ -11,6 +11,7 @@ This document prioritizes mode implementation order to minimize rework and overa
 | [Phase 0: Core Infrastructure](fresh-start-phase-zero-plan.md) | Pipe comm, speech, keypad, config modules | ✅ Complete (2025-12-21) |
 | [Phase 1: Frequency Mode](fresh-start-phase-1-plan.md) | First working mode implementation | ✅ Complete (2025-12-21) |
 | [Phase 2: Normal Mode](fresh-start-phase-2-plan.md) | Query functions and auto announcements | ✅ Complete (2025-12-22) |
+| [Phase 3: Set Mode](fresh-start-phase-3-plan.md) | Adjust radio parameters via keypad | 🔄 In Progress (2025-12-23) |
 | [Phase 1: Original Design Doc](fresh-start-first-freq-mode.md) | Original frequency mode design (reference) | 📚 Reference |
 
 ### Prerequisites (COMPLETED)
