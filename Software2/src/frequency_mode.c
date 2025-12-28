@@ -106,7 +106,24 @@ static double parse_frequency(void) {
         return -1.0;
     }
     
-    double freq_mhz = atof(g_freq_buffer);
+    double freq_mhz;
+    
+    // If no decimal point was entered and we have 4-5 digits,
+    // interpret as MHz with decimal before last 3 digits
+    // e.g., "14025" -> 14.025, "7074" -> 7.074
+    if (!g_has_decimal && g_freq_len >= 4 && g_freq_len <= 5) {
+        // Insert decimal point before last 3 digits
+        char formatted[MAX_FREQ_DIGITS + 2];
+        int decimal_pos = g_freq_len - 3;  // Position to insert decimal
+        strncpy(formatted, g_freq_buffer, decimal_pos);
+        formatted[decimal_pos] = '.';
+        strcpy(formatted + decimal_pos + 1, g_freq_buffer + decimal_pos);
+        freq_mhz = atof(formatted);
+        DEBUG_PRINT("parse_frequency: Auto-decimal '%s' -> '%s' = %.3f MHz\n", 
+                    g_freq_buffer, formatted, freq_mhz);
+    } else {
+        freq_mhz = atof(g_freq_buffer);
+    }
     
     // Validate reasonable range (100 kHz to 500 MHz)
     if (freq_mhz < 0.1 || freq_mhz > 500.0) {
@@ -194,7 +211,7 @@ bool frequency_mode_handle_key(char key, bool is_hold) {
                 // Enter frequency mode
                 g_state = FREQ_MODE_SELECT_VFO;
                 g_last_activity = time(NULL);  // Start timeout clock
-                speech_say_text(vfo_name(g_selected_vfo));
+                speech_say_text("Frequency Mode");
                 return true;
             }
             return false;  // Key not consumed
