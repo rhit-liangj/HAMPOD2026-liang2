@@ -32,7 +32,7 @@ Normal Mode is the default operating mode. Active when Frequency Mode and Set Mo
 | `[*]` | Press | **S-Meter** - Reads and announces the S-meter reading. |
 | `[*]` | Hold | **Power Meter** - Reads and announces the RF power meter reading. |
 | `[C]` | Press | **Announcements Toggle** - Toggles automatic frequency/mode announcements on or off. Announces "Announcements on" or "Announcements off". |
-| `[B]` | Press | **Enter Set Mode** - Transitions to Set Mode. Announces "Set Mode". |
+| `[B]` | Press | **Enter Set Mode** - Transitions to Set Mode. Announces "Set". |
 | `[#]` | Press | **Enter Frequency Mode** - Transitions to Frequency Mode. Announces "Frequency Mode". |
 
 ---
@@ -160,6 +160,23 @@ The following keys from the ICOMReader Manual are not yet functional:
 
 ---
 
+## Audio Feedback
+
+Audio beeps provide immediate feedback for key presses. Beeps are **configurable** via the `key_beep` setting in `hampod.conf`.
+
+| Event | Beep | Description |
+|-------|------|-------------|
+| Key Press | 1000Hz, 50ms | Short beep when any key is pressed |
+| Key Hold | 700Hz, 50ms | Lower-pitch beep when key is held (500ms threshold) |
+| Error | 400Hz, 100ms | Low beep for invalid key or action (Phase 2) |
+
+**Configuration**: Set `key_beep = 1` to enable, `key_beep = 0` to disable.
+
+> [!NOTE]
+> Beep audio files must be generated on the RPi using `./Firmware/pregen_audio/generate_beeps.sh` after installing `sox`.
+
+---
+
 ## Implementation Status Summary
 
 | Mode | Implemented | Total Planned | Status |
@@ -167,6 +184,7 @@ The following keys from the ICOMReader Manual are not yet functional:
 | **Normal Mode** | 8 key functions | ~20+ | 🟡 Partial |
 | **Frequency Mode** | All core functions | Core complete | 🟢 Complete |
 | **Set Mode** | All core parameters | Core complete | 🟢 Complete |
+| **Audio Beeps** | Press/Hold beeps | Press/Hold/Error | 🟡 Partial |
 
 ---
 
@@ -174,4 +192,5 @@ The following keys from the ICOMReader Manual are not yet functional:
 
 | Date | Changes |
 |------|---------|
+| 2025-12-31 | Added Audio Feedback section for key beeps |
 | 2025-12-29 | Initial document - cataloged all implemented functions |
