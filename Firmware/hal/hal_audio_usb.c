@@ -48,8 +48,9 @@ static int detect_usb_audio(void) {
                 
                 /* Prefer USB or Device in the name */
                 if (strstr(line, "USB") || strstr(name, "Device")) {
+                    /* Use plughw for automatic format conversion (mono->stereo, sample rate) */
                     snprintf(audio_device, sizeof(audio_device), 
-                             "sysdefault:CARD=%s", name);
+                             "plughw:%d,0", card_num);
                     pclose(fp);
                     return 0;
                 }
