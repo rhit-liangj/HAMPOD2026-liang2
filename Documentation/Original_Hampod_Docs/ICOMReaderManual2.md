@@ -411,6 +411,8 @@ Set Mode allows modification of radio parameters. It is **not a separate mode** 
 | `[D]` | Cancel, exit Set Mode |
 | `[*]` | Cancel, exit Set Mode |
 
+> **Note**: The `[*]` key can safely exit Set Mode because **no Set Mode parameters require decimal input**. Parameters that appear to need decimals (e.g., CTCSS tones like 88.5 Hz) are entered as **3-4 digit integers without a decimal point** (e.g., `885` for 88.5 Hz, `1000` for 100.0 Hz).
+
 ### 6.3 Common Control Keys in Set Mode
 
 | Key | Function |
@@ -661,9 +663,19 @@ Only `[A]`, `[B]`, `[C]`, `[D]` are valid in Configuration Mode. All other keys 
 
 ### 11.3 Frequency Announcement Optimizations
 
-- Trailing zeros after 1 kHz position are omitted
-- Second decimal point spoken as "dot" instead of "point"
-- Example: 14.250000 → "fourteen point two five zero"
+The radio returns frequencies with full precision (typically to 10 Hz or 1 Hz). The speech system optimizes announcements as follows:
+
+1. **Trailing zeros after 1 kHz are omitted** — but only if all sub-kHz digits are zero
+2. **Non-zero sub-kHz digits trigger a "dot" separator** — if any digit below 1 kHz is non-zero, a "dot" is spoken after the 1 kHz digit, followed by the remaining significant digits
+3. **"Point" vs "dot"** — the primary decimal (MHz separator) is spoken as "point"; the secondary separator (kHz to Hz) is spoken as "dot"
+
+| Radio Returns | Spoken As | Notes |
+|---------------|-----------|-------|
+| 14.250000 | "fourteen point two five zero" | All sub-kHz zeros omitted |
+| 7.240000 | "seven point two four zero" | All sub-kHz zeros omitted |
+| 14.250500 | "fourteen point two five zero dot five" | 500 Hz shown |
+| 7.123456 | "seven point one two three dot four five six" | Full sub-kHz precision |
+| 14.000000 | "fourteen point zero zero zero" | Zeros to 1 kHz spoken |
 
 ### 11.4 Frequency Plus Mode Suffixes
 
