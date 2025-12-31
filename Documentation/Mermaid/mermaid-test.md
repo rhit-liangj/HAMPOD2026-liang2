@@ -234,48 +234,48 @@ The following items are **NOT specified in the manual** and would require guessi
 
 ### 1. Audio/Speech Feedback Gaps
 
-| Gap          | Question                                                                                                                        | Manual Reference | Answer |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ------ |
-| **TODO-1.1** | What audio feedback (if any) is given when each digit is pressed? (Beep? Spoken digit? Nothing?)                                | Not specified    |        |
-| **TODO-1.2** | What audio feedback is given when the decimal point `[*]` is pressed?                                                           | Not specified    |        |
-| **TODO-1.3** | What audio feedback is given when entry is cleared via `[D]` or second `[*]`? (Beep? "Cleared"?)                                | Not specified    |        |
-| **TODO-1.4** | What audio feedback is given on keypad timeout?                                                                                 | Not specified    |        |
-| **TODO-1.5** | After frequency is sent to radio, is there confirmation speech? The sequence diagram says "(Optional)" - need definitive answer | Not specified    |        |
-| **TODO-1.6** | What audio feedback for invalid frequency entry? (Out of range for radio, malformed, etc.)                                      | Not specified    |        |
+| Gap          | Question                                                                                                                        | Manual Reference | Answer                                                                                                                                |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **TODO-1.1** | What audio feedback (if any) is given when each digit is pressed? (Beep? Spoken digit? Nothing?)                                | Not specified    | Defined by configuration parameters, set in config mode, stored in config.ini. Beep should be independent of key announcement speech. |
+| **TODO-1.2** | What audio feedback is given when the decimal point `[*]` is pressed?                                                           | Not specified    | If during number entry, speak "point".                                                                                                |
+| **TODO-1.3** | What audio feedback is given when entry is cleared via `[D]` or second `[*]`? (Beep? "Cleared"?)                                | Not specified    | "Cleared"                                                                                                                             |
+| **TODO-1.4** | What audio feedback is given on keypad timeout?                                                                                 | Not specified    | "timeout"                                                                                                                             |
+| **TODO-1.5** | After frequency is sent to radio, is there confirmation speech? The sequence diagram says "(Optional)" - need definitive answer | Not specified    | yes                                                                                                                                   |
+| **TODO-1.6** | What audio feedback for invalid frequency entry? (Out of range for radio, malformed, etc.)                                      | Not specified    | "invalid frequency"                                                                                                                   |
 
 ### 2. Frequency Format & Validation Gaps
 
-| Gap           | Question                                                                                  | Manual Reference          | Answer |
-| ------------- | ----------------------------------------------------------------------------------------- | ------------------------- | ------ |
-| **TODO-2.1**  | What is the frequency unit? MHz assumed, but not explicitly stated for entry              | Implied MHz from examples |        |
-| **TODO-2.2**  | What is the maximum number of digits allowed before the decimal point?                    | Not specified             |        |
-| **TODO-2.3**  | What is the maximum number of digits allowed after the decimal point?                     | Not specified             |        |
-| **TODO-2.4**  | What is the total maximum buffer size for frequency entry?                                | Not specified             |        |
-| **TODO-2.5**  | Are leading zeros allowed/handled? (e.g., `07.000` vs `7.000`)                            | Not specified             |        |
-| **TODO-2.6**  | What happens if user presses `[#]` (ENTER) with NO digits entered?                        | Not specified             |        |
-| **TODO-2.7**  | What happens if user enters only a decimal point and presses ENTER? (e.g., `.` or `14.`)  | Not specified             |        |
-| **TODO-2.8**  | What happens if user presses `[*]` BEFORE entering any digits?                            | Not specified             |        |
-| **TODO-2.9**  | Is there frequency range validation before sending to radio? Or is the radio responsible? | Not specified             |        |
-| **TODO-2.10** | How is an entry of "0" handled? Is it valid?                                              | Not specified             |        |
+| Gap           | Question                                                                                  | Manual Reference          | Answer                                                                      |     |
+| ------------- | ----------------------------------------------------------------------------------------- | ------------------------- | --------------------------------------------------------------------------- | --- |
+| **TODO-2.1**  | What is the frequency unit? MHz assumed, but not explicitly stated for entry              | Implied MHz from examples | MHz                                                                         |     |
+| **TODO-2.2**  | What is the maximum number of digits allowed before the decimal point?                    | Not specified             | 3                                                                           |     |
+| **TODO-2.3**  | What is the maximum number of digits allowed after the decimal point?                     | Not specified             | 9                                                                           |     |
+| **TODO-2.4**  | What is the total maximum buffer size for frequency entry?                                | Not specified             | 13                                                                          |     |
+| **TODO-2.5**  | Are leading zeros allowed/handled? (e.g., `07.000` vs `7.000`)                            | Not specified             | yes                                                                         |     |
+| **TODO-2.6**  | What happens if user presses `[#]` (ENTER) with NO digits entered?                        | Not specified             | treat it as if zero was entered                                             |     |
+| **TODO-2.7**  | What happens if user enters only a decimal point and presses ENTER? (e.g., `.` or `14.`)  | Not specified             | for "." treat it as if zero was entered,  for "14."  assume a trailing zero |     |
+| **TODO-2.8**  | What happens if user presses `[*]` BEFORE entering any digits?                            | Not specified             | assume a leading zero                                                       |     |
+| **TODO-2.9**  | Is there frequency range validation before sending to radio? Or is the radio responsible? | Not specified             | the frequency should be greater than zero and less than 1000 MHz            |     |
+| **TODO-2.10** | How is an entry of "0" handled? Is it valid?                                              | Not specified             | no                                                                          |     |
 
 ### 3. VFO Selection State Gaps
 
-| Gap | Question | Manual Reference | Answer |
-|-----|----------|------------------|--------|
-| **TODO-3.1** | If user starts with `[#]` and presses VFO cycle 3 times (back to A), can they still enter frequency? Or does VFO cycling continue indefinitely until digit pressed? | Not specified | |
-| **TODO-3.2** | What is "Current VFO"? Is it whichever VFO was last active on the radio? | Implied but not defined | |
-| **TODO-3.3** | After VFO selection, is there a timeout if no digits are pressed? Or does it wait indefinitely? | Not specified (keypad timeout may apply?) | |
-| **TODO-3.4** | Can user press `[D]` or `[*]` to cancel during VFO selection (before any digits)? | Not specified | |
+| Gap          | Question                                                                                                                                                            | Manual Reference                          | Answer                                                  |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------- |
+| **TODO-3.1** | If user starts with `[#]` and presses VFO cycle 3 times (back to A), can they still enter frequency? Or does VFO cycling continue indefinitely until digit pressed? | Not specified                             | vfo cycling until a digit is pressed                    |
+| **TODO-3.2** | What is "Current VFO"? Is it whichever VFO was last active on the radio?                                                                                            | Implied but not defined                   | It is the vfo currently active on the radio             |
+| **TODO-3.3** | After VFO selection, is there a timeout if no digits are pressed? Or does it wait indefinitely?                                                                     | Not specified (keypad timeout may apply?) | it should timeout and announce "timeout" if that occurs |
+| **TODO-3.4** | Can user press `[D]` or `[*]` to cancel during VFO selection (before any digits)?                                                                                   | Not specified                             | yes                                                     |
 
 ### 4. Key Behavior Edge Cases
 
-| Gap | Question | Manual Reference | Answer |
-|-----|----------|------------------|--------|
-| **TODO-4.1** | What do keys `[A]`, `[B]`, `[C]` do in Frequency Entry Mode? Ignored? Error beep? | Not specified | |
-| **TODO-4.2** | What does `[SHIFT]` (`[A]`) do in Frequency Entry Mode? | Not specified | |
-| **TODO-4.3** | What does `[D] Hold` do in Frequency Entry Mode? | Not specified | |
-| **TODO-4.4** | Can you press `[*]` multiple times before it counts as "second press"? (e.g., `14.*` then `[*]` again) | Unclear | |
-| **TODO-4.5** | If buffer already has decimal, does pressing `[*]` immediately clear, or is there any confirmation? | Not specified | |
+| Gap          | Question                                                                                               | Manual Reference | Answer |
+| ------------ | ------------------------------------------------------------------------------------------------------ | ---------------- | ------ |
+| **TODO-4.1** | What do keys `[A]`, `[B]`, `[C]` do in Frequency Entry Mode? Ignored? Error beep?                      | Not specified    |        |
+| **TODO-4.2** | What does `[SHIFT]` (`[A]`) do in Frequency Entry Mode?                                                | Not specified    |        |
+| **TODO-4.3** | What does `[D] Hold` do in Frequency Entry Mode?                                                       | Not specified    |        |
+| **TODO-4.4** | Can you press `[*]` multiple times before it counts as "second press"? (e.g., `14.*` then `[*]` again) | Unclear          |        |
+| **TODO-4.5** | If buffer already has decimal, does pressing `[*]` immediately clear, or is there any confirmation?    | Not specified    |        |
 
 ### 5. Keypad Timeout Behavior
 
