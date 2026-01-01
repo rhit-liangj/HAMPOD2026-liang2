@@ -532,10 +532,9 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
             return true;
         }
         
-        // [*] - Clear value
+        // [*] - Cancel and exit Set Mode (per spec: not just clear buffer)
         if (key == '*' && !is_hold) {
-            clear_value_buffer();
-            speech_say_text("Cleared");
+            set_mode_exit();
             return true;
         }
         
