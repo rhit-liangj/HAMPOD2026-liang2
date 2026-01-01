@@ -284,7 +284,7 @@ Successful submission via pound causes the unit to speak the confirmed frequency
 Cancel via D causes the unit to say "clear".
 Cancel via star star causes the unit to say "clear".
 Keypad timeout causes the unit to say "timeout".
-Invalid entry of just 0 exits silently without sending.
+Invalid entry of just 0 will timeout. If sent to radio, it sends but radio won't respond (silent). If no radio connected, errors with "Radio Timeout".
 
 
 Section 6. Set Mode
@@ -315,7 +315,7 @@ PreAmp via Set plus 4:
 Press 1 to enable PreAmp 1 and disable PreAmp 2.
 Press 2 to enable PreAmp 2 and disable PreAmp 1.
 Press 0 to disable all PreAmps.
-Stays in Set Mode. Press pound or D to exit.
+Pressing 1, 2, or 0 sends the command immediately. Pound is not needed. Pressing pound or D to exit is only valid if you have not pressed 1, 2, or 0.
 
 Attenuation via Set plus Shift plus 4:
 Enter 0 through 45 dB depending on model.

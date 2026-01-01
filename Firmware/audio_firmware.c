@@ -136,7 +136,6 @@ void audio_process() {
         write(output_pipe_fd, packet_to_send->data, sizeof(int)); //while earlier you did have this be sizeof(int) would it not be safer to just use the size value of packet_to_send 
         free(requested_string);
         destroy_inst_packet(&packet_to_send);
-        usleep(1000000);
     }
 
     pthread_join(audio_io_buffer, NULL);

@@ -392,7 +392,7 @@ Example: `7.240000` is announced as "seven point two four zero"
 | Cancel via `[D]` | "clear" |
 | Cancel via `[*][*]` | "clear" |
 | Keypad timeout | "timeout" |
-| Invalid entry (`0`) | Silent; exits without sending |
+| Invalid entry (`0`) | Timeouts. If sent to radio: sends but no response. If no radio: "Radio Timeout". |
 
 ---
 
@@ -429,7 +429,7 @@ Set Mode allows modification of radio parameters. It is **not a separate mode** 
 - `[1]`: Enable PreAmp 1, disable PreAmp 2
 - `[2]`: Enable PreAmp 2, disable PreAmp 1
 - `[0]`: Disable all PreAmps
-- Stays in Set Mode; press `[#]` or `[D]` to exit
+- Pressing `[1]`, `[2]`, or `[0]` sends command immediately. Pressing `[#]` or `[D]` to exit is only valid if `[1]`, `[2]`, or `[0]` have not been pressed.
 
 #### Attenuation (`[Set]+[Shift]+[4]`)
 - Enter 0-45 dB (model-dependent valid values)
