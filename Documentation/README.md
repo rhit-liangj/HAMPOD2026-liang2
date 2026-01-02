@@ -14,7 +14,8 @@ This directory contains documentation for the HAMPOD project.
 ### Completed
 - ✅ **Phase 1-3**: Hardware Abstraction Layer (HAL) implementation and integration
 - ✅ USB Keypad support via HAL
-- ✅ USB Audio support via HAL  
+- ✅ USB Audio support via HAL (auto-detects device using plughw format)
+- ✅ Piper TTS integration (16kHz sample rate)
 - ✅ WiringPi dependencies removed
 - ✅ Firmware builds successfully on Raspberry Pi
 
@@ -36,7 +37,7 @@ To deploy changes to the Raspberry Pi, we use a Git-based workflow (Push/Pull).
 
 SSH into the Pi and clone the repository:
 ```bash
-ssh waynesr@HAMPOD.local
+ssh hampod@hampod.local
 cd ~
 # If the directory exists but is empty/not a repo, remove it first: rm -rf HAMPOD2026
 git clone https://github.com/waynepadgett/HAMPOD2026.git
@@ -59,12 +60,12 @@ You have two options to pull the latest changes on the Pi:
 
 **Option A: One-liner (Recommended)**
 ```bash
-ssh waynesr@HAMPOD.local "cd ~/HAMPOD2026 && git pull origin main"
+ssh hampod@hampod.local "cd ~/HAMPOD2026 && git pull origin main"
 ```
 
 **Option B: Interactive SSH**
 ```bash
-ssh waynesr@HAMPOD.local
+ssh hampod@hampod.local
 cd ~/HAMPOD2026
 git pull origin main
 exit
