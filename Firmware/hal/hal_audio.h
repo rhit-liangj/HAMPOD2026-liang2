@@ -4,55 +4,56 @@
 /**
  * @file hal_audio.h
  * @brief Hardware Abstraction Layer for audio output
- * 
- * This HAL provides a unified interface for different audio output implementations
- * (USB audio, onboard audio, etc.) allowing the firmware to remain hardware-agnostic.
+ *
+ * This HAL provides a unified interface for different audio output
+ * implementations (USB audio, onboard audio, etc.) allowing the firmware to
+ * remain hardware-agnostic.
  */
 
 /**
  * @brief Initialize audio hardware
- * 
+ *
  * Detects and configures the audio output device.
  * Must be called before any other HAL audio functions.
- * 
+ *
  * @return 0 on success, negative error code on failure
  */
 int hal_audio_init(void);
 
 /**
  * @brief Set audio output device explicitly
- * 
+ *
  * Allows manual configuration of the audio device if auto-detection
  * is insufficient or a specific device is required.
- * 
+ *
  * @param device_name ALSA device name (e.g., "plughw:CARD=Device,DEV=0")
  * @return 0 on success, negative error code on failure
  */
-int hal_audio_set_device(const char* device_name);
+int hal_audio_set_device(const char *device_name);
 
 /**
  * @brief Get current audio device name
- * 
+ *
  * Returns the ALSA device string currently configured for audio output.
- * 
+ *
  * @return Pointer to static string containing device name
  */
-const char* hal_audio_get_device(void);
+const char *hal_audio_get_device(void);
 
 /**
  * @brief Play an audio file
- * 
+ *
  * Plays the specified WAV file through the configured audio device.
  * This function blocks until playback completes.
- * 
+ *
  * @param filepath Absolute or relative path to WAV file
  * @return 0 on success, negative error code on failure
  */
-int hal_audio_play_file(const char* filepath);
+int hal_audio_play_file(const char *filepath);
 
 /**
  * @brief Cleanup audio resources
- * 
+ *
  * Releases any allocated resources and resets audio configuration.
  * Should be called before program termination.
  */
@@ -60,12 +61,54 @@ void hal_audio_cleanup(void);
 
 /**
  * @brief Get audio implementation name
- * 
+ *
  * Returns a string describing the current audio implementation
  * (e.g., "USB Audio", "Onboard Audio")
- * 
+ *
  * @return Pointer to static string containing implementation name
  */
-const char* hal_audio_get_impl_name(void);
+const char *hal_audio_get_impl_name(void);
+
+/* ============================================================================
+ * Persistent Pipeline API (for low-latency audio)
+ * ============================================================================
+ */
+
+#include <stddef.h>
+#include <stdint.h>
+
+/**
+ * @brief Write raw PCM samples to the audio pipeline
+ *
+ * Writes 16-bit signed samples directly to the persistent aplay process.
+ * Sample rate and format must match pipeline configuration (16kHz mono).
+ *
+ * @param samples Pointer to 16-bit signed samples
+ * @param num_samples Number of samples to write
+ * @return 0 on success, -1 on failure
+ */
+int hal_audio_write_raw(const int16_t *samples, size_t num_samples);
+
+/**
+ * @brief Interrupt current audio playback
+ *
+ * Sets an interrupt flag that will cause streaming playback to stop
+ * at the next chunk boundary (approximately 50ms).
+ */
+void hal_audio_interrupt(void);
+
+/**
+ * @brief Check if audio is currently playing
+ *
+ * @return 1 if playing, 0 otherwise
+ */
+int hal_audio_is_playing(void);
+
+/**
+ * @brief Check if the audio pipeline is ready for streaming
+ *
+ * @return 1 if pipeline is ready, 0 otherwise
+ */
+int hal_audio_pipeline_ready(void);
 
 #endif /* HAL_AUDIO_H */
