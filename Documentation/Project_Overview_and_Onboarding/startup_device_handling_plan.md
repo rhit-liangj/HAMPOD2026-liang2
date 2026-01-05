@@ -319,15 +319,15 @@ Run all existing regression tests:
 ## Verification Checklist
 
 ### Phase 1: Audio Device Selection
-- [ ] USB device enumeration works on Pi 3/4/5
-- [ ] "USB2.0 Device" is prioritized
-- [ ] Fallback to any USB audio works
-- [ ] All audio functions use same device
-- [ ] Volume control uses correct card
+- [x] USB device enumeration works on Pi 3/4/5
+- [x] "USB2.0 Device" is prioritized
+- [x] Fallback to any USB audio works
+- [x] All audio functions use same device
+- [x] Volume control uses correct card
 
 ### Phase 2: Multi-Radio Config
-- [ ] Config parses up to 10 radios
-- [ ] Only one radio can be enabled
+- [x] Config parses up to 10 radios
+- [x] Only one radio can be enabled
 - [ ] Radio module uses active radio
 - [ ] Changing enabled radio in config switches device
 
