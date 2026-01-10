@@ -108,7 +108,39 @@ HAL_OBJS = hal/hal_keypad_matrix.o hal/hal_audio_onboard.o
 
 ## Testing
 
-Each HAL implementation can be tested independently:
+### HAL Test Programs
+
+Build all test programs:
+```bash
+cd Firmware/hal/tests
+make all
+```
+
+Run automated tests only:
+```bash
+make test
+```
+
+### Available Tests
+
+| Test | Type | Description |
+|------|------|-------------|
+| `test_hal_audio` | Automated | Audio HAL unit tests - init/cleanup, raw samples, WAV playback, beeps |
+| `test_hal_usb_util` | Automated | USB device enumeration utility tests |
+| `test_hal_keypad` | Manual | Keypad HAL test - run and press keys to verify detection |
+| `test_hal_integration` | Manual | Full integration test - keypad + audio + TTS speaking key names |
+
+### Running Manual Tests
+
+```bash
+# Test keypad detection (requires USB keypad, press keys)
+sudo ./test_hal_keypad
+
+# Full integration test (requires keypad + audio + Piper TTS)
+sudo ./test_hal_integration
+```
+
+### Hardware Verification
 
 ```bash
 # Test USB keypad detection
