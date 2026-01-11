@@ -3,7 +3,7 @@
 # Last Updated: January 2026
 
 CC = gcc
-CFLAGS = -Wall -I.. -DUSE_PIPER -DBEEP_BASE_PATH=\"../../pregen_audio/\"
+CFLAGS = -Wall -I.. -DUSE_PIPER -DBEEP_BASE_PATH=\"../../pregen_audio/\" -DPIPER_MODEL_PATH=\"../../models/en_US-lessac-low.onnx\"
 LDFLAGS = -lasound -lm
 HAL_DIR = ..
 
