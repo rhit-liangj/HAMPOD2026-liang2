@@ -40,7 +40,7 @@ NC='\033[0m' # No Color
 # Configuration
 REPO_URL="https://github.com/waynepadgett/HAMPOD2026.git"
 HAMPOD_DIR="$HOME/HAMPOD2026"
-TOTAL_STEPS=7
+TOTAL_STEPS=9
 
 # Track current step
 CURRENT_STEP=0
@@ -382,6 +382,49 @@ main() {
         sudo usermod -aG audio "$USER"
         print_success "Added $USER to audio group"
         print_warning "Note: Log out and back in for group changes to take full effect"
+    fi
+    
+    # -------------------------------------------------------------------------
+    # Step 8: Configure Auto-Start
+    # -------------------------------------------------------------------------
+    print_step "Configuring HAMPOD auto-start on boot..."
+    
+    # Make scripts executable
+    chmod +x "$HAMPOD_DIR/Documentation/scripts/hampod_on_powerup.sh" 2>/dev/null || true
+    chmod +x "$HAMPOD_DIR/Documentation/scripts/run_hampod_service.sh" 2>/dev/null || true
+    chmod +x "$HAMPOD_DIR/Documentation/scripts/power_down_protection.sh" 2>/dev/null || true
+    
+    "$HAMPOD_DIR/Documentation/scripts/hampod_on_powerup.sh" --enable
+    print_success "HAMPOD will start automatically on boot"
+    
+    # -------------------------------------------------------------------------
+    # Step 9: SD Card Protection (Optional)
+    # -------------------------------------------------------------------------
+    print_step "SD Card Protection Setup..."
+    
+    echo ""
+    echo -e "${CYAN}SD Card Protection${NC} helps prevent filesystem corruption"
+    echo "if the Raspberry Pi loses power unexpectedly."
+    echo ""
+    echo "When enabled:"
+    echo "  • SD card is read-only (protected)"
+    echo "  • All changes go to RAM and are lost on reboot"
+    echo "  • Your prompt will show [RO] in red"
+    echo ""
+    echo "When disabled:"
+    echo "  • Normal read-write operation"
+    echo "  • Your prompt will show [RW] in green"
+    echo ""
+    
+    read -p "Enable SD card protection now? [y/N] " response
+    if [[ "$response" =~ ^[Yy]$ ]]; then
+        "$HAMPOD_DIR/Documentation/scripts/power_down_protection.sh" --enable
+    else
+        print_info "SD card protection not enabled"
+        print_info "You can enable it later with: ./power_down_protection.sh --enable"
+        
+        # Still install the prompt indicator for when they do enable it
+        "$HAMPOD_DIR/Documentation/scripts/power_down_protection.sh" --status > /dev/null 2>&1 || true
     fi
     
     # -------------------------------------------------------------------------

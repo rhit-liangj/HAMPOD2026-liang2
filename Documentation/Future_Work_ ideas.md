@@ -24,3 +24,22 @@ Add support for many other devices (antenna rotors, etc.)
 
 Convert the OS to use a ramdisk for all operations other than configuration file so that power downs can't corrupt the OS
 
+
+### User Interface Refinements
+- **Conditional Status Announcements**: For queries like NB (Noise Blanker) and NR (Noise Reduction), only announce the level if the feature is enabled. This reduces verbosity.
+- **VFO Mode Announcements**:
+    - "Current VFO" logic is specific to Icom.
+    - Other manufacturers typically use VFO A/B (or C).
+    - Suggested focused announcements to minimize chatter:
+        - **Icom**: "Current" / "A" / "B" (model dependent)
+        - **TS-2000**: "A" / "B" / "C"
+        - **Most others**: "A" / "B"
+    - Consider a "Terse/Verbose" setting to optionally toggle "VFO" prefix (e.g., "VFO A" vs "A").
+
+### Data-Driven Radio Architecture
+- **Problem**: Maintenance is difficult due to feature overlap but specific differences between radios.
+- **Proposal**: Express radio behaviors, announcements, Hamlib calls, and key mappings in a standardized, human-readable format (e.g., JSON, YAML, or TOML).
+- **Benefits**:
+    - Build code or determine runtime behavior from these files.
+    - Adding a new radio becomes a configuration task (copy similar radio config, tweak) rather than a coding task.
+    - Interface tweaks (like the VFO announcements above) can be made in data without rewriting logic.
