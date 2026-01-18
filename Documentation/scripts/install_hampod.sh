@@ -415,6 +415,10 @@ main() {
     echo "  • Normal read-write operation"
     echo "  • Your prompt will show [RW] in green"
     echo ""
+    echo -e "${YELLOW}Recommendation:${NC}"
+    echo -e "  • ${GREEN}End users${NC} should enable this (answer Y)"
+    echo -e "  • ${CYAN}Developers${NC} should skip this (answer N) - you can enable it later"
+    echo ""
     
     read -p "Enable SD card protection now? [y/N] " response
     if [[ "$response" =~ ^[Yy]$ ]]; then
