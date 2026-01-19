@@ -165,13 +165,23 @@ if mount | grep -q "on / type overlay"; then
     # Overlay is active - need to write to lower filesystem
     echo "Overlay mode detected - writing to persistent storage..."
     
-    # Get the lower directory from overlay mount (format: overlayroot on / type overlay (...,lowerdir=/media/root-ro,...))
+    # Try to get the lower directory from overlay mount
+    # Format: overlayroot on / type overlay (...,lowerdir=/media/root-ro,...)
     MOUNT_LINE=$(mount | grep "on / type overlay")
-    LOWER_DIR=$(echo "$MOUNT_LINE" | grep -o 'lowerdir=[^,)]*' | sed 's/lowerdir=//' | cut -d: -f1)
+    
+    # Try different parsing methods
+    LOWER_DIR=$(echo "$MOUNT_LINE" | sed -n 's/.*lowerdir=\([^,)]*\).*/\1/p' | cut -d: -f1)
+    
+    # Fallback to known Raspberry Pi OS path
+    if [ -z "$LOWER_DIR" ] && [ -d "/media/root-ro" ]; then
+        LOWER_DIR="/media/root-ro"
+        echo "Using default lower filesystem path: $LOWER_DIR"
+    fi
     
     if [ -z "$LOWER_DIR" ]; then
         echo "Error: Could not determine lower filesystem path"
         echo "Mount line was: $MOUNT_LINE"
+        echo "Hint: The lower filesystem is usually /media/root-ro"
         exit 1
     fi
     
@@ -340,15 +350,42 @@ disable_protection() {
     echo -e "${CYAN}Disabling SD Card Protection...${NC}"
     echo ""
     
-    # Disable boot partition protection first
-    print_info "Disabling boot partition protection..."
-    raspi-config nonint disable_bootro
-    print_success "Boot partition protection disabled"
-    
-    # Disable overlay filesystem
-    print_info "Disabling overlay filesystem..."
-    raspi-config nonint disable_overlayfs
-    print_success "Overlay filesystem disabled"
+    # If overlay is currently active, we can't use raspi-config - need to modify boot partition directly
+    if is_overlay_active; then
+        print_warning "Overlay is currently active - using direct boot partition modification"
+        
+        # Remount boot partition as writable
+        print_info "Remounting boot partition as writable..."
+        if ! mount -o remount,rw /boot/firmware 2>/dev/null; then
+            print_error "Could not remount /boot/firmware as writable"
+            exit 1
+        fi
+        print_success "Boot partition remounted"
+        
+        # Remove overlayroot from cmdline.txt
+        print_info "Removing overlay configuration from cmdline.txt..."
+        if [ -f /boot/firmware/cmdline.txt ]; then
+            sed -i 's/overlayroot=tmpfs //' /boot/firmware/cmdline.txt
+            sed -i 's/ overlayroot=tmpfs//' /boot/firmware/cmdline.txt
+            sed -i 's/overlayroot=tmpfs//' /boot/firmware/cmdline.txt
+            print_success "Overlay removed from boot configuration"
+        fi
+        
+        # Remount boot partition as read-only
+        mount -o remount,ro /boot/firmware 2>/dev/null || true
+        print_success "Boot partition protection restored"
+    else
+        # Normal case - use raspi-config
+        # Disable boot partition protection first
+        print_info "Disabling boot partition protection..."
+        raspi-config nonint disable_bootro
+        print_success "Boot partition protection disabled"
+        
+        # Disable overlay filesystem
+        print_info "Disabling overlay filesystem..."
+        raspi-config nonint disable_overlayfs
+        print_success "Overlay filesystem disabled"
+    fi
     
     echo ""
     echo -e "${YELLOW}╔══════════════════════════════════════════════════════════════╗${NC}"
