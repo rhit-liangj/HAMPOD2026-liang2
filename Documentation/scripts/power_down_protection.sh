@@ -100,6 +100,11 @@ is_overlay_configured() {
     [ "$result" = "0" ]
 }
 
+# Check if cmdline.txt has overlay setting (more reliable after direct modifications)
+is_overlay_in_cmdline() {
+    grep -q "overlayroot" /boot/firmware/cmdline.txt 2>/dev/null
+}
+
 # ============================================================================
 # Prompt Indicator Setup
 # ============================================================================
@@ -153,6 +158,14 @@ DEST="$2"
 if [ -z "$SOURCE" ] || [ -z "$DEST" ]; then
     echo "Usage: hampod_persist_write <source_file> <destination_path>"
     exit 1
+fi
+
+# Convert relative paths to absolute
+if [[ "$SOURCE" != /* ]]; then
+    SOURCE="$(pwd)/$SOURCE"
+fi
+if [[ "$DEST" != /* ]]; then
+    DEST="$(pwd)/$DEST"
 fi
 
 if [ ! -f "$SOURCE" ]; then
@@ -234,14 +247,27 @@ show_status() {
     echo -e "${CYAN}Current Protection Status:${NC}"
     echo ""
     
-    if is_overlay_active; then
+    # Check both current state and configured state
+    local overlay_active=false
+    local overlay_will_be_active=false
+    
+    is_overlay_active && overlay_active=true
+    is_overlay_in_cmdline && overlay_will_be_active=true
+    
+    if $overlay_active; then
         echo -e "  ${RED}${BOLD}[RO] PROTECTED MODE${NC}"
         echo ""
         print_success "Overlay filesystem is ACTIVE"
         print_success "SD card is READ-ONLY"
         print_warning "All changes will be LOST on reboot"
         echo ""
-        print_info "To disable protection: sudo $0 --disable"
+        
+        # Check if disabled but not yet rebooted
+        if ! $overlay_will_be_active; then
+            print_success "Protection DISABLED - will be [RW] after reboot"
+        else
+            print_info "To disable protection: sudo $0 --disable"
+        fi
     else
         echo -e "  ${GREEN}${BOLD}[RW] NORMAL MODE${NC}"
         echo ""
@@ -249,9 +275,9 @@ show_status() {
         print_info "Changes persist across reboots"
         echo ""
         
-        # Check if configured for next boot
-        if is_overlay_configured; then
-            print_warning "Overlay is configured - will be ACTIVE after reboot"
+        # Check if enabled but not yet rebooted
+        if $overlay_will_be_active; then
+            print_warning "Protection ENABLED - will be [RO] after reboot"
         else
             print_info "To enable protection: sudo $0 --enable"
         fi
