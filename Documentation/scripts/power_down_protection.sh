@@ -160,38 +160,45 @@ if [ ! -f "$SOURCE" ]; then
     exit 1
 fi
 
-if grep -q " / overlay " /proc/mounts 2>/dev/null; then
+# Check for overlay by looking at root mount type
+if mount | grep -q "on / type overlay"; then
     # Overlay is active - need to write to lower filesystem
     echo "Overlay mode detected - writing to persistent storage..."
     
-    # Get the lower directory from overlay mount
-    OVERLAY_OPTS=$(mount | grep "overlay on / " | sed 's/.*(\(.*\))/\1/')
-    LOWER_DIR=$(echo "$OVERLAY_OPTS" | tr ',' '\n' | grep "^lowerdir=" | sed 's/lowerdir=//' | cut -d: -f1)
+    # Get the lower directory from overlay mount (format: overlayroot on / type overlay (...,lowerdir=/media/root-ro,...))
+    MOUNT_LINE=$(mount | grep "on / type overlay")
+    LOWER_DIR=$(echo "$MOUNT_LINE" | grep -o 'lowerdir=[^,)]*' | sed 's/lowerdir=//' | cut -d: -f1)
     
     if [ -z "$LOWER_DIR" ]; then
         echo "Error: Could not determine lower filesystem path"
+        echo "Mount line was: $MOUNT_LINE"
         exit 1
     fi
+    
+    echo "Lower filesystem: $LOWER_DIR"
     
     # Temporarily remount lower filesystem as writable
-    mount -o remount,rw "$LOWER_DIR" 2>/dev/null || mount -o remount,rw / 2>/dev/null || {
-        echo "Error: Could not remount filesystem as writable"
-        exit 1
-    }
-    
-    # Copy the file
-    cp "$SOURCE" "${LOWER_DIR}${DEST}" 2>/dev/null || cp "$SOURCE" "$DEST"
-    RESULT=$?
-    
-    # Remount as read-only
-    mount -o remount,ro "$LOWER_DIR" 2>/dev/null || mount -o remount,ro / 2>/dev/null || true
-    
-    if [ $RESULT -eq 0 ]; then
-        echo "File written persistently to $DEST"
-    else
-        echo "Error: Failed to write file"
+    if ! mount -o remount,rw "$LOWER_DIR" 2>/dev/null; then
+        echo "Error: Could not remount $LOWER_DIR as writable"
         exit 1
     fi
+    
+    # Copy the file to the lower filesystem
+    DEST_DIR=$(dirname "${LOWER_DIR}${DEST}")
+    mkdir -p "$DEST_DIR" 2>/dev/null || true
+    
+    if cp "$SOURCE" "${LOWER_DIR}${DEST}"; then
+        echo "File written persistently to $DEST"
+        RESULT=0
+    else
+        echo "Error: Failed to write file"
+        RESULT=1
+    fi
+    
+    # Remount as read-only
+    mount -o remount,ro "$LOWER_DIR" 2>/dev/null || true
+    
+    exit $RESULT
 else
     # Normal mode - just copy
     cp "$SOURCE" "$DEST"
