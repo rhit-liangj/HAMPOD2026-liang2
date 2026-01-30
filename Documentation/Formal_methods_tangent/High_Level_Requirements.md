@@ -1627,6 +1627,235 @@ Requirements use the following format:
 
 ---
 
+### 3.9 Radio Configuration Architecture
+
+#### 3.9.1 Configuration Interpreter Model
+
+**[HLR-077] Configuration-Driven Behavior**
+> The HAMPOD SHALL implement radio-specific behavior through interpretation of configuration files rather than hard-coded logic, enabling support for new radios without software modification.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | SLR-029, SLR-054, SLR-055 |
+| Rationale | Enables extensibility to hundreds of radios via data, not code |
+| Verification | Demonstration |
+
+**[HLR-078] Input/Output Service Model**
+> The HAMPOD core SHALL function as an input/output service that interprets configuration files to determine responses to user input and radio events.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-077 |
+| Rationale | Clean separation between generic engine and radio-specific behavior |
+| Verification | Inspection |
+
+#### 3.9.2 Configuration File Contents
+
+**[HLR-079] Key-to-Action Mapping**
+> Radio configuration files SHALL specify the mapping from key inputs (with modifiers) to actions including: Hamlib function calls, announcements, and parameter transformations.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-077, HLR-059 |
+| Rationale | Defines what happens when user presses a key for this radio |
+| Verification | Inspection |
+
+**[HLR-080] Announcement Text Specification**
+> Radio configuration files SHALL specify announcement text for each function, supporting both verbose and terse variants.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-079, SLR-010 |
+| Rationale | Different radios may use different terminology; verbosity levels need different text |
+| Verification | Inspection |
+
+**[HLR-081] Hamlib Function Binding**
+> Radio configuration files SHALL specify which Hamlib functions to call for each action, including required parameters.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-079, SLR-030 |
+| Rationale | Maps abstract actions to concrete Hamlib API calls |
+| Verification | Inspection |
+
+**[HLR-082] Parameter Input Filtering**
+> Radio configuration files SHOULD specify parameter validation rules (ranges, allowed values) for user input, with graceful handling when radio returns errors for out-of-range values.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHOULD (Strongly Desired) |
+| Parent | HLR-079 |
+| Rationale | Catch obvious errors early; rely on radio for definitive validation |
+| Verification | Test |
+
+#### 3.9.3 Response Handling
+
+**[HLR-083] Hamlib Return Value Handling**
+> Radio configuration files SHALL specify how to handle Hamlib return values, including successful responses, error codes, and timeouts.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-077, SLR-013 |
+| Rationale | Consistent error handling across different radios |
+| Verification | Test |
+
+**[HLR-084] Error Message Announcement**
+> When a Hamlib call returns an error, the HAMPOD SHALL announce a detailed error message in verbose mode, or simply "error" in terse mode.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-083, HLR-065 |
+| Rationale | Users need to understand what went wrong; experienced users want brevity |
+| Verification | Test |
+
+**[HLR-085] Error Message Table**
+> The HAMPOD SHOULD maintain a table mapping Hamlib error codes to human-readable announcement text.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHOULD (Strongly Desired) |
+| Parent | HLR-084 |
+| Rationale | Consistent, meaningful error messages across all radios |
+| Verification | Inspection |
+
+**[HLR-086] Timeout Handling**
+> When a Hamlib call fails to respond within the configured timeout, the HAMPOD SHALL announce "no response" or equivalent and return to a ready state.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-083, HLR-069 |
+| Rationale | User must not be left waiting indefinitely |
+| Verification | Test |
+
+#### 3.9.4 Default Behaviors
+
+**[HLR-087] Default Behavior Definitions**
+> The HAMPOD SHALL provide default behaviors for common operations that radio configuration files can inherit and override as needed.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-077 |
+| Rationale | Reduces configuration file size and complexity; DRY principle |
+| Verification | Inspection |
+
+**[HLR-088] Default Override Mechanism**
+> Radio configuration files SHALL be able to override any default behavior for radio-specific requirements.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-087 |
+| Rationale | Some radios require non-standard handling |
+| Verification | Test |
+
+#### 3.9.5 Unsupported Feature Handling
+
+**[HLR-089] Unsupported Feature Detection**
+> When a user invokes a function not supported by the connected radio (missing from config or Hamlib returns "not implemented"), the HAMPOD SHALL announce "not available" or equivalent.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-083, SLR-013 |
+| Rationale | Clear feedback that feature is unavailable, not broken |
+| Verification | Test |
+
+**[HLR-090] Graceful Feature Degradation**
+> The HAMPOD SHALL continue operating normally when an unsupported feature is invoked; unsupported features SHALL NOT cause system errors or mode changes.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-089 |
+| Rationale | Single missing feature should not disrupt overall operation |
+| Verification | Test |
+
+**[HLR-091] Configuration-Constrained Behavior**
+> The HAMPOD behavior for a given radio SHALL be constrained by: (1) what the configuration file specifies, (2) what Hamlib supports for that radio, and (3) what the physical radio supports.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-077 |
+| Rationale | Clarifies the layered constraint model for radio support |
+| Verification | Analysis |
+
+#### 3.9.6 Runtime Configuration Management
+
+**[HLR-092] Configuration Memory Loading**
+> The HAMPOD SHALL load the active device's configuration file into an in-memory data structure for fast access during operation.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-077 |
+| Rationale | File I/O on every key press would be too slow; memory access is required for responsive operation |
+| Verification | Test |
+
+**[HLR-093] Device Switching Configuration Reload**
+> When the user switches to a different radio or accessory device, the HAMPOD SHALL load the configuration file for the newly selected device, replacing the previous configuration in memory.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-092 |
+| Rationale | Each device may have different capabilities and key mappings |
+| Verification | Test |
+
+**[HLR-094] Configuration Switch Announcement**
+> When switching devices, the HAMPOD SHALL announce the name of the newly selected device to confirm the switch.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-093, HLR-003 |
+| Rationale | User must know which device is now active |
+| Verification | Test |
+
+**[HLR-095] Configuration Load Failure Handling**
+> If a configuration file fails to load (missing, corrupt, parse error), the HAMPOD SHALL announce the error and remain in a safe state with the previous configuration or a minimal default.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-093, SLR-013 |
+| Rationale | Configuration problems should not crash the system |
+| Verification | Test |
+
+#### 3.9.7 Device Discovery and Port Management (Future)
+
+**[HLR-096] Device-Port Association**
+> The HAMPOD SHOULD provide a mechanism for the user to associate devices with specific ports during setup.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHOULD (Strongly Desired) |
+| Parent | SLR-043, SLR-044 |
+| Rationale | Users need to specify which radio is on which USB/serial port |
+| Verification | Demonstration |
+| Note | Detailed elicitation of discovery workflow deferred to future session |
+
+**[HLR-097] Multi-Device Support**
+> The HAMPOD SHOULD support configuration of multiple devices (radios, accessories) with the ability to switch between them during operation.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHOULD (Strongly Desired) |
+| Parent | HLR-093, SLR-057 |
+| Rationale | Operators may have multiple radios or accessories in their station |
+| Verification | Demonstration |
+
+---
+
 ## 4. Requirements Traceability Matrix
 
 ### 4.1 System-Level Requirements
@@ -1780,6 +2009,27 @@ Requirements use the following format:
 | HLR-074 | SLR-013 | SHALL | Test | Draft |
 | HLR-075 | HLR-029 | SHALL | Test | Draft |
 | HLR-076 | HLR-067, HLR-003 | SHALL | Test | Draft |
+| HLR-077 | SLR-029, SLR-054, SLR-055 | SHALL | Demonstration | Draft |
+| HLR-078 | HLR-077 | SHALL | Inspection | Draft |
+| HLR-079 | HLR-077, HLR-059 | SHALL | Inspection | Draft |
+| HLR-080 | HLR-079, SLR-010 | SHALL | Inspection | Draft |
+| HLR-081 | HLR-079, SLR-030 | SHALL | Inspection | Draft |
+| HLR-082 | HLR-079 | SHOULD | Test | Draft |
+| HLR-083 | HLR-077, SLR-013 | SHALL | Test | Draft |
+| HLR-084 | HLR-083, HLR-065 | SHALL | Test | Draft |
+| HLR-085 | HLR-084 | SHOULD | Inspection | Draft |
+| HLR-086 | HLR-083, HLR-069 | SHALL | Test | Draft |
+| HLR-087 | HLR-077 | SHALL | Inspection | Draft |
+| HLR-088 | HLR-087 | SHALL | Test | Draft |
+| HLR-089 | HLR-083, SLR-013 | SHALL | Test | Draft |
+| HLR-090 | HLR-089 | SHALL | Test | Draft |
+| HLR-091 | HLR-077 | SHALL | Analysis | Draft |
+| HLR-092 | HLR-077 | SHALL | Test | Draft |
+| HLR-093 | HLR-092 | SHALL | Test | Draft |
+| HLR-094 | HLR-093, HLR-003 | SHALL | Test | Draft |
+| HLR-095 | HLR-093, SLR-013 | SHALL | Test | Draft |
+| HLR-096 | SLR-043, SLR-044 | SHOULD | Demonstration | Draft |
+| HLR-097 | HLR-093, SLR-057 | SHOULD | Demonstration | Draft |
 
 ---
 
@@ -1791,6 +2041,7 @@ Requirements use the following format:
 | ALC | Automatic Level Control; prevents transmitter overdrive |
 | CAT | Computer-Aided Transceiver; protocol for computer control of radios |
 | CI-V | ICOM's CAT protocol over serial interface |
+| DRY | Don't Repeat Yourself; software principle to reduce duplication |
 | DStar | Digital Smart Technologies for Amateur Radio; ICOM digital voice mode |
 | DTMF | Dual-Tone Multi-Frequency; audio tones for signaling |
 | Festival | Traditional rules-based text-to-speech engine |
@@ -1820,4 +2071,6 @@ Requirements use the following format:
 | 0.3 | 2026-01-30 | Wayne Padgett / Claude | Interface Requirements (SLR-035 through SLR-066) added: physical interfaces, supported devices, software interfaces |
 | 0.4 | 2026-01-30 | Wayne Padgett / Claude | High-Level Requirements (HLR-001 through HLR-075) added: operating modes, key modifiers, core radio operations, configuration, timing, and reliability |
 | 0.5 | 2026-01-30 | Wayne Padgett / Claude | Generalized parser requirements (HLR-061, HLR-062) to apply to all configuration files; added HLR-076 timeout announcement; clarified HLR-067 references HLR-018 |
+| 0.6 | 2026-01-30 | Wayne Padgett / Claude | Radio Configuration Architecture (HLR-077 through HLR-091): interpreter model, config file contents, response handling, defaults, unsupported features |
+| 0.7 | 2026-01-30 | Wayne Padgett / Claude | Runtime Configuration Management (HLR-092 through HLR-097): memory loading, device switching, multi-device support, port management placeholder |
 
