@@ -3,7 +3,7 @@ HAMPOD HIGH-LEVEL REQUIREMENTS DOCUMENT
 
 Document Status: DRAFT - Requirements Elicitation In Progress
 Created: 2026-01-21
-Last Updated: 2026-01-21
+Last Updated: 2026-01-30
 Methodology: Aerospace-style requirements engineering (DO-178C/DO-254 inspired)
 
 
@@ -318,6 +318,282 @@ The HAMPOD SHALL NOT require a lot of interaction other than with the speaker an
   Verification: Demonstration
 
 
+2.13 PHYSICAL INTERFACE REQUIREMENTS
+
+2.13.1 User Input Interfaces
+
+[SLR-035] Primary Input Device
+The HAMPOD SHALL support a USB numeric keypad as the primary input device, typically with a 5-row by 4-column layout and a double-size Enter key at the lower right (19 keys total).
+  Priority: SHALL (Mandatory)
+  Parent: SLR-001, SLR-027
+  Rationale: Standard USB numeric keypads are widely available commodity hardware
+  Verification: Test
+
+[SLR-036] Alternative Input Device Support
+The HAMPOD SHOULD work with other keypads or keyboards as much as practical.
+  Priority: SHOULD (Strongly Desired)
+  Parent: SLR-035
+  Rationale: Flexibility accommodates users with different available hardware
+  Verification: Test
+
+[SLR-037] Keypad Device Preference
+The HAMPOD SHALL prefer a keypad device when both a keypad and keyboard are available.
+  Priority: SHALL (Mandatory)
+  Parent: SLR-035
+  Rationale: Prevents keyboard input from interfering with keypad operation
+  Verification: Test
+
+
+2.13.2 Audio Output Interfaces
+
+[SLR-038] Flexible Audio Output
+The HAMPOD SHALL support flexible audio output according to the hardware available on the Raspberry Pi.
+  Priority: SHALL (Mandatory)
+  Parent: SLR-001
+  Rationale: Different Pi models and configurations have different audio capabilities
+  Verification: Test
+
+[SLR-039] USB Speaker Priority
+The HAMPOD SHALL prefer a USB speaker connected to an external USB port as the primary audio output.
+  Priority: SHALL (Mandatory)
+  Parent: SLR-038
+  Rationale: USB speakers are commodity hardware with consistent behavior
+  Verification: Test
+
+[SLR-040] Pi HAT Audio Interface
+The HAMPOD SHOULD use a Pi HAT audio interface as a second choice when available.
+  Priority: SHOULD (Strongly Desired)
+  Parent: SLR-038, SLR-028
+  Rationale: Enables more compact builds with integrated audio
+  Verification: Test
+
+[SLR-041] Headphone Output Fallback
+The HAMPOD MAY use a headphone interface as a last choice (external connector, header pins, or internal USB).
+  Priority: MAY (Optional)
+  Parent: SLR-038
+  Rationale: Provides fallback for configurations without USB or HAT audio
+  Verification: Test
+
+[SLR-042] HDMI Audio Exclusion
+The HAMPOD SHALL assume HDMI audio output is NOT connected and SHALL NOT require it.
+  Priority: SHALL NOT
+  Parent: SLR-038
+  Rationale: HDMI requires a monitor which is not useful for visually impaired users
+  Verification: Inspection
+
+
+2.13.3 Radio Connection Interfaces
+
+[SLR-043] USB Radio Connection
+The HAMPOD SHALL support radios connected directly via USB port for CAT control.
+  Priority: SHALL (Mandatory)
+  Parent: SLR-001, SLR-030
+  Rationale: Many modern radios provide USB CAT control
+  Verification: Test
+
+[SLR-044] Serial Port Radio Connection
+The HAMPOD SHALL support radios connected via serial port using USB-to-serial adapters of various types.
+  Priority: SHALL (Mandatory)
+  Parent: SLR-001, SLR-030
+  Rationale: Older radios and some accessories use RS-232 serial communication
+  Verification: Test
+
+[SLR-045] CAT-Only USB Connection
+The HAMPOD SHALL support USB connections for CAT control only (not audio), even when a radio supports both on one USB port.
+  Priority: SHALL (Mandatory)
+  Parent: SLR-043
+  Rationale: Audio routing is handled separately; CAT control is the primary interface
+  Verification: Test
+
+
+2.13.4 Power Interfaces
+
+[SLR-046] Raspberry Pi Power Input
+The HAMPOD SHALL be powered via the Raspberry Pi's standard power input (typically USB-type connector, varies by model).
+  Priority: SHALL (Mandatory)
+  Parent: SLR-025
+  Rationale: Uses standard Pi power infrastructure; no custom power design needed
+  Verification: Inspection
+
+[SLR-047] Power Adapter Flexibility
+The HAMPOD MAY support power adapters for both 12V (field or mobile) and 120V (home) sources, but this MAY be left to the user to provide.
+  Priority: MAY (Optional)
+  Parent: SLR-046, SLR-003
+  Rationale: Power conversion is external to the system; users can select appropriate adapters
+  Verification: Inspection
+
+
+2.13.5 Visual Indicators
+
+[SLR-048] Visual Indicators Non-Essential
+The HAMPOD SHALL NOT require visual indicators (LEDs, displays) for normal operation; all feedback SHALL be audible.
+  Priority: SHALL NOT
+  Parent: SLR-001
+  Rationale: System must be fully usable by visually impaired operators
+  Verification: Demonstration
+
+
+2.13.6 Setup and Maintenance Interfaces
+
+[SLR-049] Network Setup Acceptable
+The HAMPOD MAY require an internet connection (WiFi or Ethernet) for initial setup, but this is not desirable.
+  Priority: MAY (but discouraged)
+  Parent: SLR-034
+  Rationale: Internet may be needed for software installation but should be minimized
+  Verification: Demonstration
+
+[SLR-050] Keyboard/Mouse/Monitor Avoidance
+The HAMPOD SHALL NOT require a keyboard, mouse, or monitor connection for normal operation; requiring them for setup is highly undesirable.
+  Priority: SHALL NOT (operation) and SHOULD NOT (setup)
+  Parent: SLR-034, SLR-001
+  Rationale: These devices are not accessible to visually impaired users
+  Verification: Demonstration
+
+
+2.14 SUPPORTED DEVICES
+
+2.14.1 Reference Radios
+
+[SLR-051] Reference Radio Support
+The HAMPOD SHALL support the following reference radios used by developers and testers: ICOM IC-7300, Kenwood TS-570D, Kenwood TS-2000.
+  Priority: SHALL (Mandatory)
+  Parent: SLR-005, SLR-030
+  Rationale: These radios are available for development and testing
+  Verification: Test
+
+
+2.14.2 Manufacturer Support
+
+[SLR-052] Major Manufacturer Radio Support
+The HAMPOD SHOULD work with popular models from ICOM, Kenwood, Yaesu, and Elecraft.
+  Priority: SHOULD (Strongly Desired)
+  Parent: SLR-029, SLR-030
+  Rationale: These are the major amateur radio manufacturers
+  Verification: Test, Demonstration
+
+[SLR-053] Hamlib-Supported Radio Support
+The HAMPOD SHOULD support any radio with Hamlib support.
+  Priority: SHOULD (Strongly Desired)
+  Parent: SLR-030
+  Rationale: Leverages Hamlib's broad radio support library
+  Verification: Test
+
+
+2.14.3 Radio Extensibility
+
+[SLR-054] User-Extensible Radio Support
+The HAMPOD SHALL make it easy for a moderately technical user to add support for a new radio model, especially if similar to an existing radio interface.
+  Priority: SHALL (Mandatory)
+  Parent: SLR-029
+  Rationale: Community can expand radio support without developer involvement
+  Verification: Demonstration
+
+[SLR-055] Human-Readable Radio Configuration
+The HAMPOD SHOULD allow radio configuration via a human-readable text, configuration, or markup language file.
+  Priority: SHOULD (Strongly Desired)
+  Parent: SLR-054
+  Rationale: Text files are accessible and editable without specialized tools
+  Verification: Inspection
+
+
+2.14.4 Low-Priority Radio Support
+
+[SLR-056] Flex Radio Support
+The HAMPOD MAY support Flex Radio for basic functions, but this is low priority given its complexity and PC-centered user interface.
+  Priority: MAY (Optional, Low Priority)
+  Parent: SLR-053
+  Rationale: Flex Radios have a fundamentally different architecture that may require special handling
+  Verification: Demonstration
+
+
+2.15 NON-RADIO DEVICE SUPPORT
+
+[SLR-057] Accessory Device Support
+The HAMPOD SHOULD support computer-controlled ham radio accessories such as antenna tuners, antenna rotors, and power meters (medium-term goal, after general radio support is complete).
+  Priority: SHOULD (Medium-Term)
+  Parent: SLR-006, SLR-008
+  Rationale: Required to reproduce full functionality of original HAMPOD; enhances station control
+  Verification: Demonstration
+  Reference: Original HAMPOD documentation at hampod.com
+
+[SLR-058] Accessory Protocol Support
+The HAMPOD SHOULD support accessories with USB or serial port computer control interfaces, especially those intended for blind users.
+  Priority: SHOULD (Medium-Term)
+  Parent: SLR-057
+  Rationale: USB and serial are standard interfaces; accessible devices are priority
+  Verification: Test
+
+
+2.16 SOFTWARE INTERFACE REQUIREMENTS
+
+2.16.1 Development Interfaces
+
+[SLR-059] SSH Development Access
+The HAMPOD SHALL support SSH access for development and maintenance purposes.
+  Priority: SHALL (Mandatory)
+  Parent: SLR-034
+  Rationale: Essential for development, debugging, and advanced configuration
+  Verification: Test
+
+[SLR-060] SCP File Transfer
+The HAMPOD SHALL support SCP for file transfer during development and updates.
+  Priority: SHALL (Mandatory)
+  Parent: SLR-059
+  Rationale: Required for transferring software updates and configuration files
+  Verification: Test
+
+
+2.16.2 Software Update Mechanisms
+
+[SLR-061] Easy Software Updates
+The HAMPOD SHALL provide an easy mechanism for software updates.
+  Priority: SHALL (Mandatory)
+  Parent: SLR-001
+  Rationale: Users must be able to receive bug fixes and new features
+  Verification: Demonstration
+
+[SLR-062] GitHub Update Support
+The HAMPOD SHOULD be able to pull software updates directly from GitHub.
+  Priority: SHOULD (Strongly Desired)
+  Parent: SLR-061
+  Rationale: Simplifies update process for end users
+  Verification: Test
+
+[SLR-063] PC-Mediated Update Support
+The HAMPOD SHOULD support software updates via a connected PC (SSH and SCP) as an alternative to direct internet access.
+  Priority: SHOULD (Strongly Desired)
+  Parent: SLR-061
+  Rationale: Provides update path without exposing HAMPOD to internet
+  Verification: Test
+
+
+2.16.3 Security Requirements
+
+[SLR-064] Internet Security
+The HAMPOD SHOULD maintain good internet security by minimizing internet connectivity.
+  Priority: SHOULD (Strongly Desired)
+  Parent: SLR-001
+  Rationale: Embedded devices are vulnerable; limiting exposure reduces attack surface
+  Verification: Analysis
+
+[SLR-065] On-Demand Internet Connectivity
+The HAMPOD MAY provide a key combination to temporarily connect to a known WiFi network for updates, then automatically disable the connection when complete.
+  Priority: MAY (Optional)
+  Parent: SLR-062, SLR-064
+  Rationale: Balances ease of updates with security through controlled, temporary connectivity
+  Verification: Test
+
+
+2.16.4 Logging and External Software
+
+[SLR-066] Logging Software Interface
+The HAMPOD MAY provide an interface to amateur radio logging software (future consideration).
+  Priority: MAY (Future)
+  Parent: SLR-001
+  Rationale: Would enhance integration with operator's station logging workflow
+  Verification: Demonstration
+
+
 SECTION 3: HIGH-LEVEL REQUIREMENTS (HLR)
 ----------------------------------------
 
@@ -371,6 +647,38 @@ SLR-031, SLR-029, SHOULD, Test, Draft
 SLR-032, none, NOT REQUIRED, Inspection, Draft
 SLR-033, SLR-017, SHALL NOT, Demonstration, Draft
 SLR-034, SLR-001, SHALL NOT and MAY, Demonstration, Draft
+SLR-035, SLR-001 and SLR-027, SHALL, Test, Draft
+SLR-036, SLR-035, SHOULD, Test, Draft
+SLR-037, SLR-035, SHALL, Test, Draft
+SLR-038, SLR-001, SHALL, Test, Draft
+SLR-039, SLR-038, SHALL, Test, Draft
+SLR-040, SLR-038 and SLR-028, SHOULD, Test, Draft
+SLR-041, SLR-038, MAY, Test, Draft
+SLR-042, SLR-038, SHALL NOT, Inspection, Draft
+SLR-043, SLR-001 and SLR-030, SHALL, Test, Draft
+SLR-044, SLR-001 and SLR-030, SHALL, Test, Draft
+SLR-045, SLR-043, SHALL, Test, Draft
+SLR-046, SLR-025, SHALL, Inspection, Draft
+SLR-047, SLR-046 and SLR-003, MAY, Inspection, Draft
+SLR-048, SLR-001, SHALL NOT, Demonstration, Draft
+SLR-049, SLR-034, MAY, Demonstration, Draft
+SLR-050, SLR-034 and SLR-001, SHALL NOT and SHOULD NOT, Demonstration, Draft
+SLR-051, SLR-005 and SLR-030, SHALL, Test, Draft
+SLR-052, SLR-029 and SLR-030, SHOULD, Test and Demonstration, Draft
+SLR-053, SLR-030, SHOULD, Test, Draft
+SLR-054, SLR-029, SHALL, Demonstration, Draft
+SLR-055, SLR-054, SHOULD, Inspection, Draft
+SLR-056, SLR-053, MAY, Demonstration, Draft
+SLR-057, SLR-006 and SLR-008, SHOULD, Demonstration, Draft
+SLR-058, SLR-057, SHOULD, Test, Draft
+SLR-059, SLR-034, SHALL, Test, Draft
+SLR-060, SLR-059, SHALL, Test, Draft
+SLR-061, SLR-001, SHALL, Demonstration, Draft
+SLR-062, SLR-061, SHOULD, Test, Draft
+SLR-063, SLR-061, SHOULD, Test, Draft
+SLR-064, SLR-001, SHOULD, Analysis, Draft
+SLR-065, SLR-062 and SLR-064, MAY, Test, Draft
+SLR-066, SLR-001, MAY, Demonstration, Draft
 
 
 SECTION 5: GLOSSARY
@@ -390,6 +698,12 @@ Set Modifier: Key modifier used to change values (query vs. adjust pattern)
 
 DTMF: Dual-Tone Multi-Frequency; audio tones for signaling
 
+Pi HAT: Hardware Attached on Top; add-on board for Raspberry Pi
+
+SCP: Secure Copy Protocol; file transfer over SSH
+
+SSH: Secure Shell; encrypted remote access protocol
+
 
 SECTION 6: REVISION HISTORY
 ---------------------------
@@ -397,5 +711,7 @@ SECTION 6: REVISION HISTORY
 Version 0.1, 2026-01-21: Initial document structure
 
 Version 0.2, 2026-01-21, Wayne Padgett and Claude: System-Level Requirements (SLR-001 through SLR-034) captured from elicitation
+
+Version 0.3, 2026-01-30, Wayne Padgett and Claude: Interface Requirements (SLR-035 through SLR-066) added: physical interfaces, supported devices, software interfaces
 
 END OF DOCUMENT
