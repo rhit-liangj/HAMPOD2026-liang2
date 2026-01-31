@@ -1854,6 +1854,123 @@ Requirements use the following format:
 | Rationale | Operators may have multiple radios or accessories in their station |
 | Verification | Demonstration |
 
+#### 3.9.8 Device Registry and Persistence
+
+**[HLR-098] Known Device Registry**
+> The HAMPOD system configuration file SHALL store a registry of all known devices that have been configured, including: device type, manufacturer, model, port assignment, and a unique identifier (e.g., USB serial number if available).
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-096, HLR-097 |
+| Rationale | Enables detection of device changes and persistent configuration |
+| Verification | Inspection |
+
+**[HLR-099] Active Device Persistence**
+> The HAMPOD system configuration file SHALL store which device was last active, so that the HAMPOD starts up controlling the same device.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-098 |
+| Rationale | User expects to resume with the same device as last session |
+| Verification | Test |
+
+**[HLR-100] Startup Device Restoration**
+> On startup, the HAMPOD SHALL attempt to connect to the last active device and announce success or failure.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-099 |
+| Rationale | Predictable startup behavior |
+| Verification | Test |
+
+#### 3.9.9 Device Change Detection
+
+**[HLR-101] Startup Device Scan**
+> On startup, the HAMPOD SHOULD scan connected USB/serial devices and compare against the known device registry.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHOULD (Strongly Desired) |
+| Parent | HLR-098 |
+| Rationale | Detect configuration changes that may affect operation |
+| Verification | Test |
+
+**[HLR-102] New Device Detection**
+> If a new device is detected (not in registry), the HAMPOD SHOULD offer to enter port configuration mode to identify it.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHOULD (Strongly Desired) |
+| Parent | HLR-101 |
+| Rationale | New devices need configuration before use |
+| Verification | Demonstration |
+
+**[HLR-103] Missing Device Tolerance**
+> Missing devices (in registry but not detected) SHALL be silently ignored during startup scan, as they may simply be powered off.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-101 |
+| Rationale | Normal for devices to be powered off; should not trigger errors |
+| Verification | Test |
+
+**[HLR-104] Moved Device Detection**
+> If a known device appears on a different port than registered, the HAMPOD SHOULD offer to update the port assignment.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHOULD (Strongly Desired) |
+| Parent | HLR-101, HLR-098 |
+| Rationale | USB ports may be reassigned; auto-detect simplifies reconfiguration |
+| Verification | Demonstration |
+
+#### 3.9.10 Port Configuration Methods
+
+**[HLR-105] Reconnection Discovery Method**
+> The HAMPOD SHOULD support a device discovery method where the user disconnects and reconnects each device one at a time, then identifies the device by scrolling through lists of supported manufacturers and models.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHOULD (Strongly Desired) |
+| Parent | HLR-096 |
+| Rationale | Works for all device types; definitive identification |
+| Verification | Demonstration |
+
+**[HLR-106] Device Verification via Hamlib**
+> After user identifies device manufacturer and model, the HAMPOD SHOULD verify the identification by having Hamlib communicate with the device and confirm its identity.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHOULD (Strongly Desired) |
+| Parent | HLR-105, SLR-030 |
+| Rationale | Confirms user selection matches actual device |
+| Verification | Test |
+
+**[HLR-107] Activity-Based Discovery Method**
+> The HAMPOD MAY support an alternative discovery method where the user causes each device to generate CAT output (e.g., turn the tuning knob) and the HAMPOD detects which port receives the data.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | MAY (Optional) |
+| Parent | HLR-096 |
+| Rationale | Faster for experienced users; may not work for all device types |
+| Verification | Demonstration |
+| Note | Some devices may not send unsolicited status; method may not work for all accessories |
+
+**[HLR-108] Manual Port Configuration**
+> The HAMPOD SHALL support manual port configuration via editing the configuration file for development and advanced users.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHALL (Mandatory) |
+| Parent | HLR-096, SLR-059 |
+| Rationale | Always available as fallback; required for development |
+| Verification | Inspection |
+
 ---
 
 ## 4. Requirements Traceability Matrix
@@ -2030,6 +2147,17 @@ Requirements use the following format:
 | HLR-095 | HLR-093, SLR-013 | SHALL | Test | Draft |
 | HLR-096 | SLR-043, SLR-044 | SHOULD | Demonstration | Draft |
 | HLR-097 | HLR-093, SLR-057 | SHOULD | Demonstration | Draft |
+| HLR-098 | HLR-096, HLR-097 | SHALL | Inspection | Draft |
+| HLR-099 | HLR-098 | SHALL | Test | Draft |
+| HLR-100 | HLR-099 | SHALL | Test | Draft |
+| HLR-101 | HLR-098 | SHOULD | Test | Draft |
+| HLR-102 | HLR-101 | SHOULD | Demonstration | Draft |
+| HLR-103 | HLR-101 | SHALL | Test | Draft |
+| HLR-104 | HLR-101, HLR-098 | SHOULD | Demonstration | Draft |
+| HLR-105 | HLR-096 | SHOULD | Demonstration | Draft |
+| HLR-106 | HLR-105, SLR-030 | SHOULD | Test | Draft |
+| HLR-107 | HLR-096 | MAY | Demonstration | Draft |
+| HLR-108 | HLR-096, SLR-059 | SHALL | Inspection | Draft |
 
 ---
 
@@ -2073,4 +2201,5 @@ Requirements use the following format:
 | 0.5 | 2026-01-30 | Wayne Padgett / Claude | Generalized parser requirements (HLR-061, HLR-062) to apply to all configuration files; added HLR-076 timeout announcement; clarified HLR-067 references HLR-018 |
 | 0.6 | 2026-01-30 | Wayne Padgett / Claude | Radio Configuration Architecture (HLR-077 through HLR-091): interpreter model, config file contents, response handling, defaults, unsupported features |
 | 0.7 | 2026-01-30 | Wayne Padgett / Claude | Runtime Configuration Management (HLR-092 through HLR-097): memory loading, device switching, multi-device support, port management placeholder |
+| 0.8 | 2026-01-31 | Wayne Padgett / Claude | Device Discovery and Port Management (HLR-098 through HLR-108): device registry, startup behavior, change detection, reconnection and activity-based discovery methods |
 
