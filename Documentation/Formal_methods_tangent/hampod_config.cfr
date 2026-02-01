@@ -2,7 +2,7 @@
 // HAMPOD Radio Configuration Model in Clafer
 // =============================================================================
 // This file models the configuration variability for HAMPOD devices.
-// Based on High-Level Requirements HLR-077 through HLR-128.
+// Based on High-Level Requirements HLR-077 through HLR-130.
 //
 // Clafer Tutorial Notes:
 // - 'abstract' means this is a template, not a concrete instance
@@ -20,6 +20,7 @@
 
 abstract AudioConfig
     // HLR-119: Configurable synthesizer selection
+    // HLR-120: Runtime switching between synthesizers (SHOULD)
     Synthesizer
         xor SynthesizerType
             Piper
@@ -32,6 +33,13 @@ abstract AudioConfig
             Festival
                 // HLR-122: Festival as low-latency alternative
                 Voice : string          // e.g., "kal_diphone"
+            OtherTTS ?
+                // HLR-130: Extensible synthesizer support (TBD)
+                synthesizerName : string    // e.g., "eSpeak", "Mimic", etc.
+                configPath : string ?       // Path to synth-specific config
+        
+        // HLR-120: Runtime switching capability
+        runtimeSwitchingEnabled ?       // If present, can change synth at runtime
     
     // HLR-109, HLR-110: Latency requirements
     targetLatencyMs : integer
@@ -48,13 +56,23 @@ abstract AudioConfig
         errorDurationMs : integer = 100         // HLR-115
         beepLatencyMaxMs : integer = 50         // HLR-112
     
-    // HLR-123, HLR-124, HLR-125: Implementation options
+    // HLR-123, HLR-124, HLR-125, HLR-129: Implementation options
     ImplementationOptions
         persistentLoading ?         // HLR-123: Keep synth in memory
         continuousStream ?          // HLR-124: Always-on audio stream
         audioBufferMs : integer     // HLR-125: Buffer size
         [audioBufferMs >= 20]
         [audioBufferMs <= 100]
+        
+        // HLR-129: Pre-generated audio caching
+        PreGeneratedAudioCache ?
+            cacheEnabled : integer = 1
+            cachePath : string              // e.g., "/var/cache/hampod/audio"
+            // What to cache
+            cacheDigits ?                   // 0-9, "point", etc.
+            cacheFrequencyComponents ?      // "megahertz", "kilohertz", etc.
+            cacheModeNames ?                // "USB", "LSB", "AM", "FM", etc.
+            cacheCommonPhrases ?            // "frequency", "mode", "power", etc.
 
 // Platform-specific constraints (HLR-126, HLR-127, HLR-128)
 abstract Platform

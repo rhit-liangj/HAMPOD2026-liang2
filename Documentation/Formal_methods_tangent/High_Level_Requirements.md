@@ -2124,6 +2124,26 @@ Requirements use the following format:
 | Rationale | Festival is less computationally expensive; works on Pi3B; some users prefer less realistic synthesis |
 | Verification | Test |
 
+**[HLR-129] Pre-Generated Audio Caching**
+> The HAMPOD SHOULD support caching of pre-generated audio for common announcements (e.g., digits, frequency components, mode names) to reduce synthesizer computation time.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHOULD (Strongly Desired) |
+| Parent | HLR-109, HLR-119 |
+| Rationale | Pre-generated audio eliminates synthesis delay for predictable content; particularly beneficial on lower-powered hardware |
+| Verification | Test |
+
+**[HLR-130] Extensible Synthesizer Support**
+> The HAMPOD SHOULD support addition of alternative TTS synthesizers beyond Piper and Festival through a modular interface.
+
+| Attribute | Value |
+|-----------|-------|
+| Priority | SHOULD (Strongly Desired) |
+| Parent | HLR-119 |
+| Rationale | Allows experimentation with other synthesizers (e.g., eSpeak, Mimic, others TBD) without architectural changes |
+| Verification | Inspection |
+
 #### 3.10.5 Audio Implementation Considerations
 
 **[HLR-123] Persistent Audio Subsystem**
@@ -2396,6 +2416,8 @@ Requirements use the following format:
 | HLR-126 | HLR-109, SLR-032 | SHALL | Test | Draft |
 | HLR-127 | HLR-110, SLR-033 | SHALL | Test | Draft |
 | HLR-128 | HLR-119 | SHALL | Test | Draft |
+| HLR-129 | HLR-109, HLR-119 | SHOULD | Test | Draft |
+| HLR-130 | HLR-119 | SHOULD | Inspection | Draft |
 
 ---
 
@@ -2442,4 +2464,5 @@ Requirements use the following format:
 | 0.7 | 2026-01-30 | Wayne Padgett / Claude | Runtime Configuration Management (HLR-092 through HLR-097): memory loading, device switching, multi-device support, port management placeholder |
 | 0.8 | 2026-01-31 | Wayne Padgett / Claude | Device Discovery and Port Management (HLR-098 through HLR-108): device registry, startup behavior, change detection, reconnection and activity-based discovery methods |
 | 0.9 | 2026-02-01 | Wayne Padgett / Claude | Audio Subsystem (HLR-109 through HLR-128): latency requirements, beep specifications, interruption behavior, synthesizer selection, implementation considerations, platform-specific performance |
+| 0.10 | 2026-02-01 | Wayne Padgett / Claude | Added HLR-129 (pre-generated audio caching) and HLR-130 (extensible synthesizer support); updated Clafer model |
 
