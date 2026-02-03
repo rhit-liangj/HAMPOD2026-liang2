@@ -14,7 +14,7 @@ HAL_TTS = $(HAL_DIR)/hal_tts_piper.c
 HAL_USB_UTIL = $(HAL_DIR)/hal_usb_util.c
 
 # Test executables
-TARGETS = test_hal_audio test_hal_usb_util test_hal_keypad test_hal_integration test_interrupt_bypass
+TARGETS = test_hal_audio test_hal_usb_util test_hal_keypad test_hal_integration test_interrupt_bypass test_persistent_piper
 
 .PHONY: all clean test
 
@@ -51,6 +51,12 @@ test_interrupt_bypass: test_interrupt_bypass.c $(HAL_AUDIO) $(HAL_TTS) $(HAL_USB
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -lpthread
 	@echo "Built: test_interrupt_bypass"
 	@echo "Run with: ./test_interrupt_bypass"
+
+# Persistent Piper tests (Phase 2 feature)
+test_persistent_piper: test_persistent_piper.c $(HAL_AUDIO) $(HAL_TTS) $(HAL_USB_UTIL)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	@echo "Built: test_persistent_piper"
+	@echo "Run with: ./test_persistent_piper"
 
 # Run automated tests only
 test: test_hal_audio test_hal_usb_util test_interrupt_bypass
