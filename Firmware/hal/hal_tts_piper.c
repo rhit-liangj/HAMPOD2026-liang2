@@ -268,9 +268,12 @@ int hal_tts_speak(const char *text, const char *output_file) {
     return -1;
   }
 
-  /* Clear interrupt flags - allow new speech to proceed */
+  /* Clear TTS interrupt flag for this new utterance.
+   * NOTE: We don't clear audio_interrupted here - if we were just interrupted,
+   * the new TTS should still respect that. audio_interrupted will be cleared
+   * by the firmware when a new non-interrupt audio packet arrives.
+   */
   tts_interrupted = 0;
-  hal_audio_clear_interrupt();
 
   /* Send text to Piper via stdin (with newline to trigger processing) */
   if (fprintf(piper_stdin, "%s\n", text) < 0 || fflush(piper_stdin) != 0) {

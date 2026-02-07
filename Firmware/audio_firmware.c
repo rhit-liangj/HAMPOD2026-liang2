@@ -102,13 +102,19 @@ void audio_process() {
     char default_directory[0x100];
     getcwd(default_directory, sizeof(default_directory));
     if (audio_type_byte == 'd') {
+      /* New TTS request - clear interrupt so this can play */
+      hal_audio_clear_interrupt();
       AUDIO_PRINTF("TTS speak (direct): %s\n", remaining_string);
       system_result = hal_tts_speak(remaining_string, NULL);
     } else if (audio_type_byte == 's') {
+      /* New TTS request - clear interrupt so this can play */
+      hal_audio_clear_interrupt();
       AUDIO_PRINTF("TTS speak (save): %s\n", remaining_string);
       /* For Piper persistent mode, we ignore output_file and speak directly */
       system_result = hal_tts_speak(remaining_string, NULL);
     } else if (audio_type_byte == 'p') {
+      /* Playing audio file - clear interrupt so this can play */
+      hal_audio_clear_interrupt();
       // strcpy(buffer, "aplay '");
       // strcat(remaining_string, ".wav'");
       // strcat(buffer, remaining_string);
@@ -242,6 +248,12 @@ void *audio_io_thread(void *arg) {
       AUDIO_IO_PRINTF("INTERRUPT BYPASS: Handling interrupt immediately\n");
       hal_audio_interrupt();
       hal_tts_interrupt();
+
+      /* Clear any queued audio packets so they don't play after interrupt */
+      pthread_mutex_lock(&audio_queue_lock);
+      clear_queue(queue);
+      pthread_mutex_unlock(&audio_queue_lock);
+      AUDIO_IO_PRINTF("INTERRUPT BYPASS: Cleared audio queue\n");
 
       /* Send acknowledgment directly to output pipe */
       int ack_result = 0;
