@@ -686,6 +686,11 @@ int hal_audio_play_beep(BeepType type) {
     }
   }
 
+  /* Drain to ensure beep plays completely before returning.
+   * This prevents TTS from starting before the beep is heard. */
+  snd_pcm_drain(pcm_handle);
+  snd_pcm_prepare(pcm_handle); /* Prepare for next audio */
+
   return 0;
 }
 
