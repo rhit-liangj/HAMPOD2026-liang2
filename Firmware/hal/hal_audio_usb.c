@@ -666,9 +666,7 @@ int hal_audio_play_beep(BeepType type) {
   }
 
   if (!beep->loaded || beep->samples == NULL) {
-    fprintf(stderr,
-            "HAL Audio: Beep not loaded (type=%d, loaded=%d, samples=%p)\n",
-            type, beep->loaded, (void *)beep->samples);
+    fprintf(stderr, "HAL Audio: Beep not loaded (type=%d)\n", type);
     return -1;
   }
 
@@ -677,26 +675,14 @@ int hal_audio_play_beep(BeepType type) {
     return -1;
   }
 
-  printf("HAL Audio: Writing %zu samples for beep\n", beep->num_samples);
-
   /* Write beep samples directly to ALSA (fast, no file I/O) */
   snd_pcm_sframes_t frames =
       snd_pcm_writei(pcm_handle, beep->samples, beep->num_samples);
 
-  printf("HAL Audio: snd_pcm_writei returned %ld\n", (long)frames);
-
   if (frames < 0) {
-    printf("HAL Audio: Attempting recovery from %ld\n", (long)frames);
     frames = snd_pcm_recover(pcm_handle, frames, 0);
     if (frames < 0) {
       fprintf(stderr, "HAL Audio: Beep write error: %s\n",
-              snd_strerror(frames));
-      return -1;
-    }
-    /* After recovery, we need to write again */
-    frames = snd_pcm_writei(pcm_handle, beep->samples, beep->num_samples);
-    if (frames < 0) {
-      fprintf(stderr, "HAL Audio: Beep write after recovery failed: %s\n",
               snd_strerror(frames));
       return -1;
     }
@@ -704,20 +690,15 @@ int hal_audio_play_beep(BeepType type) {
 
   /* Ensure playback has started - device may be in prepared state */
   snd_pcm_state_t state = snd_pcm_state(pcm_handle);
-  printf("HAL Audio: PCM state after write: %d\n", state);
   if (state == SND_PCM_STATE_PREPARED) {
-    printf("HAL Audio: Starting playback explicitly\n");
     snd_pcm_start(pcm_handle);
   }
 
   /* Drain to ensure beep plays completely before returning.
    * This prevents TTS from starting before the beep is heard. */
-  printf("HAL Audio: Draining...\n");
   snd_pcm_drain(pcm_handle);
-  printf("HAL Audio: Preparing for next audio...\n");
   snd_pcm_prepare(pcm_handle); /* Prepare for next audio */
 
-  printf("HAL Audio: Beep complete\n");
   return 0;
 }
 
