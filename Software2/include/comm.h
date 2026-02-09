@@ -174,6 +174,17 @@ typedef enum {
 int comm_play_beep(CommBeepType beep_type);
 
 /**
+ * Set speech speed for TTS.
+ *
+ * Sends a speed setting to Firmware which restarts Piper with the new
+ * --length_scale value. Lower values = faster speech.
+ *
+ * @param speed Speed multiplier (0.5 = faster, 1.0 = normal, 2.0 = slower)
+ * @return HAMPOD_OK on success, HAMPOD_ERROR on failure
+ */
+int comm_set_speech_speed(float speed);
+
+/**
  * Query the audio card number from Firmware.
  *
  * Sends an AUDIO_TYPE_INFO request and waits for the response

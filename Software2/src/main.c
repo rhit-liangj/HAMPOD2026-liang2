@@ -177,6 +177,11 @@ int main(int argc, char *argv[]) {
            card_number);
   }
 
+  // Set speech speed from config
+  float speech_speed = config_get_speech_speed();
+  printf("Setting speech speed to %.2f\n", speech_speed);
+  comm_set_speech_speed(speech_speed);
+
   int volume = config_get_volume();
   printf("Setting volume to %d%% on card %d...\n", volume, card_number);
   char vol_cmd[256];

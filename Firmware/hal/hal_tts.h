@@ -55,4 +55,15 @@ void hal_tts_cleanup(void);
  */
 const char *hal_tts_get_impl_name(void);
 
+/**
+ * @brief Set speech speed
+ *
+ * Sets the speech rate for Piper TTS. If Piper is running, it will be
+ * restarted with the new speed.
+ *
+ * @param speed Speed multiplier (0.5 = faster, 1.0 = normal, 2.0 = slower)
+ * @return 0 on success, -1 on failure
+ */
+int hal_tts_set_speed(float speed);
+
 #endif /* HAL_TTS_H */

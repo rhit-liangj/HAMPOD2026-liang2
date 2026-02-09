@@ -315,6 +315,31 @@ void *audio_io_thread(void *arg) {
       continue;
     }
 
+    /* ===== SPEED SETTING BYPASS =====
+     * Handle speed packets ('s') immediately without queueing.
+     * Format: "s1.0" where 1.0 is the speed value.
+     */
+    if (size > 1 && buffer[0] == 's') {
+      float speed = atof((char *)&buffer[1]);
+      AUDIO_IO_PRINTF("SPEED BYPASS: Setting speed to %.2f\n", speed);
+
+      int speed_result = hal_tts_set_speed(speed);
+      AUDIO_IO_PRINTF("SPEED BYPASS: Result %d\n", speed_result);
+
+      /* Send acknowledgment directly to output pipe */
+      Inst_packet *ack_packet = create_inst_packet(
+          AUDIO, sizeof(int), (unsigned char *)&speed_result, tag);
+      write(o_pipe, ack_packet, 8);
+      write(o_pipe, ack_packet->data, sizeof(int));
+      destroy_inst_packet(&ack_packet);
+
+      /* Release queue lock if we held it, then skip normal queue processing */
+      if (queue_empty) {
+        pthread_mutex_unlock(&audio_queue_available);
+      }
+      continue;
+    }
+
     Inst_packet *queued_packet = create_inst_packet(type, size, buffer, tag);
 
     AUDIO_IO_PRINTF("Locking queue\n");

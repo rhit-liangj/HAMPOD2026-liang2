@@ -26,6 +26,7 @@
 #define PIPER_MODEL_PATH "models/en_US-lessac-low.onnx"
 #endif
 
+/* Default speed - can be overridden by hal_tts_set_speed() */
 #ifndef PIPER_SPEED
 #define PIPER_SPEED "1.0"
 #endif
@@ -40,6 +41,9 @@
 /* Persistent Piper process state */
 static int initialized = 0;
 static volatile int tts_interrupted = 0;
+
+/* Runtime speech speed (can be changed via hal_tts_set_speed) */
+static char piper_speed[16] = PIPER_SPEED;
 
 /* Persistent Piper pipes and process ID */
 static FILE *piper_stdin = NULL; /* Write text to Piper here */
@@ -111,7 +115,7 @@ static int start_persistent_piper(void) {
 
     /* Execute Piper with persistent read from stdin */
     execlp("piper", "piper", "--model", PIPER_MODEL_PATH, "--length_scale",
-           PIPER_SPEED, "--output_raw", NULL);
+           piper_speed, "--output_raw", NULL);
 
     /* execlp only returns on error */
     perror("HAL TTS: execlp(piper) failed");
@@ -376,4 +380,28 @@ void hal_tts_cleanup(void) {
 
 const char *hal_tts_get_impl_name(void) {
   return "Piper (Persistent Subprocess)";
+}
+
+int hal_tts_set_speed(float speed) {
+  /* Validate speed range (0.5 to 2.0 is reasonable) */
+  if (speed < 0.5f)
+    speed = 0.5f;
+  if (speed > 2.0f)
+    speed = 2.0f;
+
+  /* Format speed as string */
+  snprintf(piper_speed, sizeof(piper_speed), "%.2f", speed);
+  printf("HAL TTS: Setting speech speed to %s\n", piper_speed);
+
+  /* If Piper is already running, restart it with new speed */
+  if (initialized && piper_pid > 0) {
+    printf("HAL TTS: Restarting Piper with new speed\n");
+    stop_persistent_piper();
+    if (start_persistent_piper() != 0) {
+      fprintf(stderr, "HAL TTS: Failed to restart Piper with new speed\n");
+      return -1;
+    }
+  }
+
+  return 0;
 }

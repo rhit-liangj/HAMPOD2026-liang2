@@ -600,6 +600,19 @@ int comm_play_beep(CommBeepType beep_type) {
   return comm_send_audio('b', payload);
 }
 
+int comm_set_speech_speed(float speed) {
+  /*
+   * Sends a speed setting to Firmware using the 's' audio type.
+   * Protocol: 's' + speed_string (e.g. "s1.0" or "s0.8")
+   */
+  char payload[16];
+  snprintf(payload, sizeof(payload), "%.2f", speed);
+
+  LOG_INFO("comm_set_speech_speed: Setting speed to %s", payload);
+
+  return comm_send_audio('s', payload);
+}
+
 // ============================================================================
 // Audio Device Query
 // ============================================================================
