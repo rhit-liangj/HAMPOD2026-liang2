@@ -53,7 +53,7 @@ If you need to set up the operating system on your Raspberry Pi and flash an SD 
 SSH into your Raspberry Pi and run these commands:
 
 ```
-git clone https://github.com/waynepadgett/HAMPOD2026.git
+git clone https://github.com/rhit-liangj/HAMPOD2026-liang2.git
 cd HAMPOD2026/Documentation/scripts
 ./install_hampod.sh
 ```
@@ -65,7 +65,7 @@ The install script will update system packages, install dependencies including H
 To start the system:
 
 ```
-cd HAMPOD2026
+cd HAMPOD2026-liang2
 ./Documentation/scripts/run_hampod.sh
 ```
 
