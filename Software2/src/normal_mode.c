@@ -103,8 +103,13 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     // [1] - VFO selection
     if (key == '1') {
         if(is_shifted && !is_hold){
+            bool vox_on = false;
+        if (radio_get_vox_enabled(&vox_on)) {
+            speech_say_text(vox_on ? "VOX on" : "VOX off");
+        } else {
             speech_say_text("VOX status not available");
-            return true;
+        }
+        return true;
         }
         else if (!is_hold) {
             // Select VFO A
