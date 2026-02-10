@@ -108,4 +108,6 @@ double radio_get_power_meter(void);
  */
 const char* radio_get_power_string(char* buffer, int buf_size);
 
+int radio_get_vox_status(void);
+
 #endif // RADIO_QUERIES_H
