@@ -259,15 +259,12 @@ const char* radio_get_power_string(char* buffer, int buf_size) {
     return buffer;
 }
 // get radio vox status
-bool radio_get_vox_enabled(bool *out_enabled)
-{
-    if (!out_enabled) return false;
-
+int radio_get_vox_status(void){
     pthread_mutex_lock(&g_rig_mutex);
 
     if (!g_connected || !g_rig) {
         pthread_mutex_unlock(&g_rig_mutex);
-        return false;
+        return -1;
     }
 
     int status = 0;
@@ -276,10 +273,9 @@ bool radio_get_vox_enabled(bool *out_enabled)
     pthread_mutex_unlock(&g_rig_mutex);
 
     if (retcode != RIG_OK) {
-        DEBUG_PRINT("radio_get_vox_enabled: %s\n", rigerror(retcode));
-        return false;
+        DEBUG_PRINT("radio_get_vox_status: %s\n", rigerror(retcode));
+        return -1;
     }
 
-    *out_enabled = (status != 0);
-    return true;
+    return status ? 1 : 0;
 }
