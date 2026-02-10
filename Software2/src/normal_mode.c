@@ -108,9 +108,9 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         if (vox < 0) {
             speech_say_text("VOX status unavailable");
         } else if (vox == 1) {
-            speech_say_text("VOX on");
+            speech_say_text("VOX is on");
         } else {
-            speech_say_text("VOX off");
+            speech_say_text("VOX is off");
         }
 
         return true;
