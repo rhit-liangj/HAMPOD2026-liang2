@@ -54,7 +54,7 @@ SSH into your Raspberry Pi and run these commands:
 
 ```
 git clone https://github.com/rhit-liangj/HAMPOD2026-liang2.git
-cd HAMPOD2026/Documentation/scripts
+cd HAMPOD2026-liang2/Documentation/scripts
 ./install_hampod.sh
 ```
 

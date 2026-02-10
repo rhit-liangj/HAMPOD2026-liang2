@@ -102,7 +102,10 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     
     // [1] - VFO selection
     if (key == '1') {
-        if (!is_hold) {
+        if(is_shifted && !is_hold){
+            speech_say_text("VOX status not available");
+        }
+        else if (!is_hold) {
             // Select VFO A
             // Suppress polling announcement since we'll announce ourselves
             frequency_mode_suppress_next_poll();
