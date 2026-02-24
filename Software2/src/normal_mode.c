@@ -100,6 +100,12 @@ void normal_mode_init(void) {
 bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     DEBUG_PRINT("normal_mode_handle_key: key='%c' hold=%d shift=%d\n", key, is_hold, is_shifted);
     
+    // [0] - Announce current mode
+    if (key == '0' && !is_hold) {
+        const char* mode = radio_get_mode_string();
+        speech_say_text(mode);
+        return true;
+    }
     // [1] - VFO selection
     if (key == '1') {
         if(is_shifted && !is_hold){
@@ -139,16 +145,29 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     }
     
     // [2] - Announce current frequency
-    if (key == '2' && !is_hold) {
-        announce_frequency();
-        return true;
+    if (key == '2'){
+        if(is_shifted && !is_hold){
+            speech_say_text("shift two");
+        }
+        else if (!is_hold){
+            announce_frequency();
+            return true;
+        }
+        else{
+            // hold 2
+        }
     }
-    
-    // [0] - Announce current mode
-    if (key == '0' && !is_hold) {
-        const char* mode = radio_get_mode_string();
-        speech_say_text(mode);
-        return true;
+    // [3] 
+    if (key == '3'){
+        if(is_shifted && !is_hold){
+            speech_say_text("shift three");
+        }
+        else if(!is_hold){
+            //press 3 functions
+        }
+        else{
+            //hold 3 functions
+        }
     }
     
     // [4] - PreAmp (press) / AGC (hold) / Attenuation (shift+press)
@@ -185,9 +204,37 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
             return true;
         }
     }
-    
+    // [5] 
+    if(key = '5'){
+        if(is_shifted && !is_hold){
+            speech_say_text("shift five");
+        }
+        else if(is_hold){
+            // hold 5 functions
+        }
+        else{
+            // press 5 functions
+        }
+    }
+
+    // [6]
+    if(key = '6'){
+        if(is_shifted && !is_hold){
+            speech_say_text("shift six");
+        }
+        else if(is_hold){
+            //hold 6 functions
+        }
+        else{
+            //press 6 functions
+        }
+    }
     // [7] - Noise Blanker query
-    if (key == '7' && !is_hold) {
+    if (key == '7'){
+        if(is_shifted && !is_hold){
+            speech_say_text("shift seven");
+        }
+        else if(!is_hold){
         char buffer[64];
         bool nb_on = radio_get_nb_enabled();
         int nb_level = radio_get_nb_level();
@@ -195,12 +242,20 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
                  nb_on ? "on" : "off", nb_level >= 0 ? nb_level : 0);
         speech_say_text(buffer);
         return true;
+        }
+        else{
+            speech_say_text("hold seven");
+        }
     }
+
     
     // [8] - Noise Reduction (press) / Mic Gain (hold)
     if (key == '8') {
         char buffer[64];
-        if (is_hold) {
+        if (is_shifted && !is_hold){
+            speech_say_text("shift 8");
+        }
+        else if (is_hold) {
             // [8] Hold - Mic Gain query
             int mic = radio_get_mic_gain();
             if (mic >= 0) {
