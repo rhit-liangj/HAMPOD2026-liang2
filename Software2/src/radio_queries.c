@@ -361,3 +361,27 @@ int radio_get_tuning_step(void)
 
     return ts;   // tuning step in Hz
 }
+
+// get squelch setting
+int radio_get_squelch_level(void)
+{
+    pthread_mutex_lock(&g_rig_mutex);
+
+    if (!g_connected || !g_rig) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        return -1;
+    }
+
+    value_t val;
+    int ret = rig_get_level(g_rig, RIG_VFO_CURR, RIG_LEVEL_SQL, &val);
+
+    pthread_mutex_unlock(&g_rig_mutex);
+
+    if (ret != RIG_OK) {
+        DEBUG_PRINT("radio_get_squelch_level: %s\n", rigerror(ret));
+        return -1;
+    }
+
+    // normalized value (0.0 – 1.0)
+    return (int)(val.f * 100);
+}

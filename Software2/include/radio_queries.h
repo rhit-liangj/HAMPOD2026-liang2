@@ -116,4 +116,6 @@ int radio_toggle_memory_scan(void);
 
 int radio_get_tuning_step(void);
 
+int radio_get_squelch_level(void);
+
 #endif // RADIO_QUERIES_H

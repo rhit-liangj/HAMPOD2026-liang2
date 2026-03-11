@@ -172,6 +172,17 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
             speech_say_text(buffer);
             }
         }
+        else if(is_shifted && is_hold){
+            // shift hold 2 get squelch level
+            int level = radio_get_squelch_level();
+            if(level < 0){
+                speech_say_text("sequelch level not available");
+            }else{
+                char buffer[64];
+                snprintf(buffer, sizeof(buffer), "Squelch level %d percent", sql);
+                speech_say_text(buffer);
+            }
+        }
         else if (!is_hold){
             announce_frequency();
             return true;
@@ -194,7 +205,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
             speech_say_text("shift three");
         }
         else if(!is_hold){
-            //press 3 functions
+            //press 3 toggle split mode
         }
         else{
             //hold 3 functions
