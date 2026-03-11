@@ -113,14 +113,24 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
 
         if (vox < 0) {
             speech_say_text("VOX status unavailable");
-        } else if (vox == 1) {
+            } else if (vox == 1) {
             speech_say_text("VOX is now on");
-        } else {
+            } else {
             speech_say_text("VOX is off");
+            }
+        }
+        else if(is_shifted && is_hold){ 
+            // shift and hold, break in status
+            int break_in = radio_get_break_in_status();
+            if(break_in < 0){
+                speech_say_text("break in status unavailable");
+            } else if(break_in == 1){
+                speech_say_text("break in is on");
+            }else {
+                speech_say_text("break in is off");
+            }
         }
 
-        return true;
-        }
         else if (!is_hold) {
             // Select VFO A
             // Suppress polling announcement since we'll announce ourselves

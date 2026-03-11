@@ -279,3 +279,25 @@ int radio_get_vox_status(void){
 
     return status ? 1 : 0;
 }
+
+// get radio break in status
+int radio_get_break_in_status(void) {
+    pthread_mutex_lock(&g_rig_mutex);
+
+    if (!g_connected || !g_rig) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        return -1;
+    }
+
+    int status;
+    int retcode = rig_get_func(g_rig, RIG_VFO_CURR, RIG_FUNC_BKIND, &status);
+
+    pthread_mutex_unlock(&g_rig_mutex);
+
+    if (retcode != RIG_OK) {
+        DEBUG_PRINT("radio_get_break_in_status: %s\n", rigerror(retcode));
+        return -1;
+    }
+
+    return status;   // 0 = OFF, 1 = ON
+}

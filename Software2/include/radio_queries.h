@@ -110,4 +110,6 @@ const char* radio_get_power_string(char* buffer, int buf_size);
 
 int radio_get_vox_status(void);
 
+int radio_get_break_in_status(void);
+
 #endif // RADIO_QUERIES_H
