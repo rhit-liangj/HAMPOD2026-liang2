@@ -112,4 +112,6 @@ int radio_get_vox_status(void);
 
 int radio_get_break_in_status(void);
 
+int radio_toggle_memory_scan(void);
+
 #endif // RADIO_QUERIES_H

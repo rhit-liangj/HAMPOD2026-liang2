@@ -164,7 +164,15 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
             return true;
         }
         else{
-            // hold 2
+            // hold 2 toggle memory scan
+            int scan = radio_toggle_memory_scan();
+            if(scan < 0){
+                speech_say_text("memory scan unavailable");
+            }else if(scan == 1){
+                speech_say_text("memory scan on");
+            }else{
+                speech_say_text("memory scan diabled");
+            }
         }
     }
     // [3] 

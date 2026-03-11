@@ -301,3 +301,40 @@ int radio_get_break_in_status(void) {
 
     return status;   // 0 = OFF, 1 = ON
 }
+
+// toggle memory scan
+int radio_toggle_memory_scan(void)
+{
+    pthread_mutex_lock(&g_rig_mutex);
+
+    if (!g_connected || !g_rig) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        return -1;
+    }
+
+    int status;
+    int ret = rig_get_func(g_rig, RIG_VFO_CURR, RIG_FUNC_SCAN, &status);
+
+    if (ret != RIG_OK) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        DEBUG_PRINT("scan status error: %s\n", rigerror(ret));
+        return -1;
+    }
+
+    int result;
+
+    if (status) {
+        result = rig_scan(g_rig, RIG_VFO_CURR, RIG_SCAN_STOP);
+    } else {
+        result = rig_scan(g_rig, RIG_VFO_CURR, RIG_SCAN_MEM);
+    }
+
+    pthread_mutex_unlock(&g_rig_mutex);
+
+    if (result != RIG_OK) {
+        DEBUG_PRINT("scan toggle error: %s\n", rigerror(result));
+        return -1;
+    }
+
+    return !status;
+}
