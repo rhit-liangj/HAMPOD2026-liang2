@@ -385,3 +385,38 @@ int radio_get_squelch_level(void)
     // normalized value (0.0 – 1.0)
     return (int)(val.f * 100);
 }
+
+// toggle split mode
+int radio_toggle_split_mode(void)
+{
+    pthread_mutex_lock(&g_rig_mutex);
+
+    if (!g_connected || !g_rig) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        return -1;
+    }
+
+    int split;
+    vfo_t tx_vfo;
+
+    int ret = rig_get_split_vfo(g_rig, RIG_VFO_CURR, &split, &tx_vfo);
+
+    if (ret != RIG_OK) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        DEBUG_PRINT("radio_toggle_split_mode get: %s\n", rigerror(ret));
+        return -1;
+    }
+
+    int new_split = !split;
+
+    ret = rig_set_split_vfo(g_rig, RIG_VFO_CURR, new_split, RIG_VFO_B);
+
+    pthread_mutex_unlock(&g_rig_mutex);
+
+    if (ret != RIG_OK) {
+        DEBUG_PRINT("radio_toggle_split_mode set: %s\n", rigerror(ret));
+        return -1;
+    }
+
+    return new_split;
+}

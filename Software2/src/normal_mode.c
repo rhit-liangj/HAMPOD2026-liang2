@@ -202,13 +202,22 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     // [3] 
     if (key == '3'){
         if(is_shifted && !is_hold){
-            speech_say_text("shift three");
+            //shift 3 Choose Duplex direction
         }
         else if(!is_hold){
             //press 3 toggle split mode
+            int split = radio_toggle_split_mode();
+            if(split<0){
+                speech_say_text("split mode unavailable");
+            }else if(split = 1){
+                speech_say_text("split mode enabled");
+            }else{
+                speech_say_text("split mode diabled");
+            }
         }
         else{
-            //hold 3 functions
+            //hold 3 Exchange VFO A and VFO b
+            
         }
     }
     
