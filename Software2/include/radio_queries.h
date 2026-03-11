@@ -119,4 +119,8 @@ int radio_get_tuning_step(void);
 int radio_get_squelch_level(void);
 
 int radio_toggle_split_mode(void); 
+
+int radio_exchange_vfo(void);
+
+
 #endif // RADIO_QUERIES_H

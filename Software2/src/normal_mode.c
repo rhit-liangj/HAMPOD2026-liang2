@@ -217,7 +217,12 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         }
         else{
             //hold 3 Exchange VFO A and VFO b
-            
+            int exchange = radio_exchange_vfo();
+            if (exchange < 0){
+                speech_say_text("exchange vfo unavailable");
+            }else{
+                speech_say_text("VFO A and B exchanged");
+            }
         }
     }
     

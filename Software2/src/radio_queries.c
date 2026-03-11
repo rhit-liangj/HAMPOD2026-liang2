@@ -420,3 +420,25 @@ int radio_toggle_split_mode(void)
 
     return new_split;
 }
+
+// exchange vfo A and B
+int radio_exchange_vfo(void)
+{
+    pthread_mutex_lock(&g_rig_mutex);
+
+    if (!g_connected || !g_rig) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        return -1;
+    }
+
+    int ret = rig_vfo_op(g_rig, RIG_VFO_CURR, RIG_OP_XCHG);
+
+    pthread_mutex_unlock(&g_rig_mutex);
+
+    if (ret != RIG_OK) {
+        DEBUG_PRINT("radio_exchange_vfo: %s\n", rigerror(ret));
+        return -1;
+    }
+
+    return 1;
+}
