@@ -338,3 +338,26 @@ int radio_toggle_memory_scan(void)
 
     return !status;
 }
+
+// get tunning step status
+int radio_get_tuning_step(void)
+{
+    pthread_mutex_lock(&g_rig_mutex);
+
+    if (!g_connected || !g_rig) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        return -1;
+    }
+
+    shortfreq_t ts;
+    int ret = rig_get_ts(g_rig, RIG_VFO_CURR, &ts);
+
+    pthread_mutex_unlock(&g_rig_mutex);
+
+    if (ret != RIG_OK) {
+        DEBUG_PRINT("radio_get_tuning_step: %s\n", rigerror(ret));
+        return -1;
+    }
+
+    return ts;   // tuning step in Hz
+}

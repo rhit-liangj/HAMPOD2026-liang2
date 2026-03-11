@@ -114,4 +114,6 @@ int radio_get_break_in_status(void);
 
 int radio_toggle_memory_scan(void);
 
+int radio_get_tuning_step(void);
+
 #endif // RADIO_QUERIES_H

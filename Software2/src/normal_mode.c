@@ -157,7 +157,20 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     // [2] - Announce current frequency
     if (key == '2'){
         if(is_shifted && !is_hold){
-            speech_say_text("shift two");
+            //shift 2 tunning step status
+            int ts = radio_get_tuning_step();
+            if(ts < 0){
+                speech_say_text("tunning step unavailable");
+            }else if (ts >= 1000) {
+            char buffer[64];
+            snprintf(buffer, sizeof(buffer), "Tuning step is %d kilohertz", ts / 1000);
+            speech_say_text(buffer);
+            }
+            else {
+            char buffer[64];
+            snprintf(buffer, sizeof(buffer), "Tuning step is %d hertz", ts);
+            speech_say_text(buffer);
+            }
         }
         else if (!is_hold){
             announce_frequency();
