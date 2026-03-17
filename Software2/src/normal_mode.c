@@ -269,8 +269,16 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     // [6]
     if(key == '6'){
         if(is_shifted && !is_hold){
-            // shift 6
-            speech_say_text("shift six");
+            // shift 6 get filter number
+        int filter = radio_get_filter_number();
+        char msg[32];
+
+        if (filter == -999) {
+            speech_say_text("Filter number unavailable");
+        } else {
+            snprintf(msg, sizeof(msg), "Filter %d", filter);
+            speech_say_text(msg);
+        }            
         }
         else if(is_hold){
             //hold 6 functions audio peaker filter

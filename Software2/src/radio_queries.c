@@ -487,3 +487,37 @@ int radio_get_apf_status(void) {
     
     return status;   // 0 = off, nonzero = on
 }
+// get filter number
+int radio_get_filter_number(void) {
+    pthread_mutex_lock(&g_rig_mutex);
+    
+    if (!g_connected || !g_rig) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        return -999;
+    }
+    
+    rmode_t mode;
+    pbwidth_t width;
+    int retcode = rig_get_mode(g_rig, RIG_VFO_CURR, &mode, &width);
+    
+    pthread_mutex_unlock(&g_rig_mutex);
+    
+    if (retcode != RIG_OK) {
+        DEBUG_PRINT("radio_get_filter_number: %s\n", rigerror(retcode));
+        return -999;
+    }
+
+    // If unknown / normal
+    if (width <= 0) {
+        return 1;  // assume default filter
+    }
+
+    // Map width → filter number (approximate)
+    if (width > 2000) {
+        return 1;  // wide
+    } else if (width > 1000) {
+        return 2;  // medium
+    } else {
+        return 3;  // narrow
+    }
+}
