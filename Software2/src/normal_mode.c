@@ -273,11 +273,38 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
             speech_say_text("shift six");
         }
         else if(is_hold){
-            //hold 6 functions
+            //hold 6 functions audio peaker filter
+            int status = radio_get_apf_status();
+
+            if (status == -999) {
+                speech_say_text("Audio peaking filter unavailable");
+            } else if (status) {
+                speech_say_text("Audio peaking filter is on");
+            } else {
+                speech_say_text("Audio peaking filter is off");
+            }
+        
         }
         else{
             //press 6 functions read filter width
-            radio_say_filter_width();
+            int width = radio_get_filter_width();
+            char msg[64];
+            if (width == -999) {
+                speech_say_text("Filter width unavailable");
+            }
+            else if (width <= 0) {
+                // replaces RIG_PASSBAND_NORMAL
+                speech_say_text("Filter width is normal");
+            }
+            else if (width >= 1000) {
+                snprintf(msg, sizeof(msg), "Filter width is %.1f kilohertz", width / 1000.0);
+                speech_say_text(msg);
+            }
+            else {
+                snprintf(msg, sizeof(msg), "Filter width is %d hertz", width);
+                speech_say_text(msg);
+            }
+
         }
     }
     // [7] - Noise Blanker query
