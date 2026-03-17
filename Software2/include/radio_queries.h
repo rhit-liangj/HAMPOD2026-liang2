@@ -122,5 +122,5 @@ int radio_toggle_split_mode(void);
 
 int radio_exchange_vfo(void);
 
-
+void radio_say_filter_width(void);
 #endif // RADIO_QUERIES_H

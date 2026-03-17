@@ -174,14 +174,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         }
         else if(is_shifted && is_hold){
             // shift hold 2 get squelch level
-            int level = radio_get_squelch_level();
-            if(level < 0){
-                speech_say_text("sequelch level not available");
-            }else{
-                char buffer[64];
-                snprintf(buffer, sizeof(buffer), "Squelch level %d percent", sql);
-                speech_say_text(buffer);
-            }
+        
         }
         else if (!is_hold){
             announce_frequency();
@@ -266,23 +259,25 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
             speech_say_text("shift five");
         }
         else if(is_hold){
-            // hold 5 functions
+            // hold 5 functions implement in future
         }
         else{
-            // press 5 functions
+            // press 5 functions implement in future
         }
     }
 
     // [6]
-    if(key = '6'){
+    if(key == '6'){
         if(is_shifted && !is_hold){
+            // shift 6
             speech_say_text("shift six");
         }
         else if(is_hold){
             //hold 6 functions
         }
         else{
-            //press 6 functions
+            //press 6 functions read filter width
+            radio_say_filter_width();
         }
     }
     // [7] - Noise Blanker query

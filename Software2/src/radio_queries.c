@@ -442,3 +442,30 @@ int radio_exchange_vfo(void)
 
     return 1;
 }
+
+void radio_say_filter_width(void)
+{
+    rmode_t mode;
+    pbwidth_t width;
+    int ret;
+    char msg[64];
+
+    ret = rig_get_mode(rig, RIG_VFO_CURR, &mode, &width);
+    if (ret != RIG_OK) {
+        speech_say_text("Filter width unavailable");
+        return;
+    }
+
+    if (width == RIG_PASSBAND_NORMAL) {
+        speech_say_text("Filter width is normal");
+        return;
+    }
+
+    if (width >= 1000) {
+        snprintf(msg, sizeof(msg), "Filter width is %.1f kilohertz", width / 1000.0);
+    } else {
+        snprintf(msg, sizeof(msg), "Filter width is %d hertz", (int)width);
+    }
+
+    speech_say_text(msg);
+}
