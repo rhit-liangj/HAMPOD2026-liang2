@@ -261,7 +261,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         }
     }
     // [5] 
-    if(key = '5'){
+    if(key == '5'){
         if(is_shifted && !is_hold){
             speech_say_text("shift five");
         }
@@ -274,21 +274,21 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     }
 
     // [6]
-    if(key == '6'){
-        if(is_shifted && !is_hold){
-            // shift 6 get filter number
-        int filter = radio_get_filter_number();
-        char msg[32];
+    if (key == '6') {
+        if (is_shifted && !is_hold) {
+            // shift + press 6 -> get filter number
+            int filter = radio_get_filter_number();
+            char msg[32];
 
-        if (filter == -999) {
-            speech_say_text("Filter number unavailable");
-        } else {
-            snprintf(msg, sizeof(msg), "Filter %d", filter);
-            speech_say_text(msg);
-        }            
+            if (filter == -999) {
+                speech_say_text("Filter number unavailable");
+            } else {
+                snprintf(msg, sizeof(msg), "Filter %d", filter);
+                speech_say_text(msg);
+            }
         }
-        else if(is_hold){
-            //hold 6 functions audio peaker filter
+        else if (!is_shifted && is_hold) {
+            // hold 6 -> audio peaking filter
             int status = radio_get_apf_status();
 
             if (status == -999) {
@@ -298,18 +298,16 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
             } else {
                 speech_say_text("Audio peaking filter is off");
             }
-        
         }
-        else{
-            //press 6 functions read filter width
-            speech_say_text("test");
+        else if (!is_shifted && !is_hold) {
+            // press 6 -> read filter width
             int width = radio_get_filter_width();
             char msg[64];
+
             if (width == -999) {
                 speech_say_text("Filter width unavailable");
             }
             else if (width <= 0) {
-                // replaces RIG_PASSBAND_NORMAL
                 speech_say_text("Filter width is normal");
             }
             else if (width >= 1000) {
@@ -320,7 +318,6 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
                 snprintf(msg, sizeof(msg), "Filter width is %d hertz", width);
                 speech_say_text(msg);
             }
-
         }
     }
     // [7] - Noise Blanker query
