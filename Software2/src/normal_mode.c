@@ -180,7 +180,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         }
         else if(is_shifted && is_hold){
             // shift hold 2 get squelch level
-        
+            
         }
         else if (!is_hold){
             announce_frequency();
@@ -302,6 +302,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         }
         else{
             //press 6 functions read filter width
+            speech_say_text("test");
             int width = radio_get_filter_width();
             char msg[64];
             if (width == -999) {
