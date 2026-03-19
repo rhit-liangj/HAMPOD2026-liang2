@@ -47,9 +47,9 @@ static const struct {
     {KEY_KP4, '4'},
     {KEY_KP5, '5'},
     {KEY_KP6, '6'},
-    {KEY_KP7, '0'},
-    {KEY_KP8, '1'},
-    {KEY_KP9, '2'},
+    {KEY_KP7, '1'},
+    {KEY_KP8, '2'},
+    {KEY_KP9, '3'},
 
     /* Function keys mapped to A-D */
     {KEY_KPSLASH, 'A'},    /* / → A */
