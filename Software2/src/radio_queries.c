@@ -289,54 +289,60 @@ int radio_get_break_in_status(void) {
         return -1;
     }
 
-    int status;
-    int retcode = rig_get_func(g_rig, RIG_VFO_CURR, RIG_FUNC_BKIND, &status);
+    int semi = 0;
+    int full = 0;
+
+    int ret_semi = rig_get_func(g_rig, RIG_VFO_CURR, RIG_FUNC_SBKIN, &semi);
+    int ret_full = rig_get_func(g_rig, RIG_VFO_CURR, RIG_FUNC_FBKIN, &full);
 
     pthread_mutex_unlock(&g_rig_mutex);
 
-    if (retcode != RIG_OK) {
-        DEBUG_PRINT("radio_get_break_in_status: %s\n", rigerror(retcode));
+    if (ret_semi != RIG_OK && ret_full != RIG_OK) {
+        DEBUG_PRINT("radio_get_break_in_status: break-in unavailable\n");
         return -1;
     }
 
-    return status;   // 0 = OFF, 1 = ON
+    if (full) return 2;   // full break-in
+    if (semi) return 1;   // semi break-in
+    return 0;             // off
 }
 
 // toggle memory scan
 int radio_toggle_memory_scan(void)
 {
-    pthread_mutex_lock(&g_rig_mutex);
+    // fix later
+    // pthread_mutex_lock(&g_rig_mutex);
 
-    if (!g_connected || !g_rig) {
-        pthread_mutex_unlock(&g_rig_mutex);
-        return -1;
-    }
+    // if (!g_connected || !g_rig) {
+    //     pthread_mutex_unlock(&g_rig_mutex);
+    //     return -1;
+    // }
 
-    int status;
-    int ret = rig_get_func(g_rig, RIG_VFO_CURR, RIG_FUNC_SCAN, &status);
+    // int status;
+    // int ret = rig_get_func(g_rig, RIG_VFO_CURR, RIG_FUNC_SCAN, &status);
 
-    if (ret != RIG_OK) {
-        pthread_mutex_unlock(&g_rig_mutex);
-        DEBUG_PRINT("scan status error: %s\n", rigerror(ret));
-        return -1;
-    }
+    // if (ret != RIG_OK) {
+    //     pthread_mutex_unlock(&g_rig_mutex);
+    //     DEBUG_PRINT("scan status error: %s\n", rigerror(ret));
+    //     return -1;
+    // }
 
-    int result;
+    // int result;
 
-    if (status) {
-        result = rig_scan(g_rig, RIG_VFO_CURR, RIG_SCAN_STOP);
-    } else {
-        result = rig_scan(g_rig, RIG_VFO_CURR, RIG_SCAN_MEM);
-    }
+    // if (status) {
+    //     result = rig_scan(g_rig, RIG_VFO_CURR, RIG_SCAN_STOP);
+    // } else {
+    //     result = rig_scan(g_rig, RIG_VFO_CURR, RIG_SCAN_MEM);
+    // }
 
-    pthread_mutex_unlock(&g_rig_mutex);
+    // pthread_mutex_unlock(&g_rig_mutex);
 
-    if (result != RIG_OK) {
-        DEBUG_PRINT("scan toggle error: %s\n", rigerror(result));
-        return -1;
-    }
+    // if (result != RIG_OK) {
+    //     DEBUG_PRINT("scan toggle error: %s\n", rigerror(result));
+    //     return -1;
+    // }
 
-    return !status;
+    // return !status;
 }
 
 // get tunning step status
@@ -396,7 +402,7 @@ int radio_toggle_split_mode(void)
         return -1;
     }
 
-    int split;
+    split_t split;
     vfo_t tx_vfo;
 
     int ret = rig_get_split_vfo(g_rig, RIG_VFO_CURR, &split, &tx_vfo);
@@ -407,7 +413,7 @@ int radio_toggle_split_mode(void)
         return -1;
     }
 
-    int new_split = !split;
+    split_t new_split = (split == RIG_SPLIT_ON) ? RIG_SPLIT_OFF : RIG_SPLIT_ON;
 
     ret = rig_set_split_vfo(g_rig, RIG_VFO_CURR, new_split, RIG_VFO_B);
 
@@ -418,7 +424,7 @@ int radio_toggle_split_mode(void)
         return -1;
     }
 
-    return new_split;
+    return (new_split == RIG_SPLIT_ON) ? 1 : 0;
 }
 
 // exchange vfo A and B

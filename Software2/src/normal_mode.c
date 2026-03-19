@@ -120,14 +120,20 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
             }
         }
         else if(is_shifted && is_hold){ 
-            // shift and hold, break in status
+        // shift + hold → break-in status
             int break_in = radio_get_break_in_status();
-            if(break_in < 0){
-                speech_say_text("break in status unavailable");
-            } else if(break_in == 1){
-                speech_say_text("break in is on");
-            }else {
-                speech_say_text("break in is off");
+
+            if (break_in < 0) {
+                speech_say_text("Break in status unavailable");
+            } 
+            else if (break_in == 2) {
+                speech_say_text("Full break in is on");
+            } 
+            else if (break_in == 1) {
+                speech_say_text("Semi break in is on");
+            } 
+            else {
+                speech_say_text("Break in is off");
             }
         }
 
@@ -200,12 +206,13 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         else if(!is_hold){
             //press 3 toggle split mode
             int split = radio_toggle_split_mode();
-            if(split<0){
-                speech_say_text("split mode unavailable");
-            }else if(split = 1){
-                speech_say_text("split mode enabled");
-            }else{
-                speech_say_text("split mode diabled");
+
+            if (split < 0) {
+                speech_say_text("Split mode unavailable");
+            } else if (split == 1) {
+                speech_say_text("Split mode is now on");
+            } else {
+                speech_say_text("Split mode is now off");
             }
         }
         else{
