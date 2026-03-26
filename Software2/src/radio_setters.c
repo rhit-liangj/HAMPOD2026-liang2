@@ -667,3 +667,31 @@ int radio_set_tuning_step(int step_hz) {
     DEBUG_PRINT("radio_set_tuning_step: Set to %d Hz\n", step_hz);
     return 0;
 }
+
+int radio_set_vox_status(bool enable)
+{
+    pthread_mutex_lock(&g_rig_mutex);
+
+    if (!g_connected || !g_rig) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        DEBUG_PRINT("radio_set_vox_status: not connected\n");
+        return -1;
+    }
+
+    int retcode = rig_set_func(
+        g_rig,
+        RIG_VFO_CURR,
+        RIG_FUNC_VOX,
+        enable ? 1 : 0
+    );
+
+    pthread_mutex_unlock(&g_rig_mutex);
+
+    if (retcode != RIG_OK) {
+        DEBUG_PRINT("radio_set_vox_status: %s\n", rigerror(retcode));
+        return -1;
+    }
+
+    DEBUG_PRINT("radio_set_vox_status: %s\n", enable ? "ON" : "OFF");
+    return 0;
+}

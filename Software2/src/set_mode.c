@@ -65,6 +65,7 @@ static const char* param_name(SetModeParameter param) {
         case SET_PARAM_ATTENUATION: return "Attenuation";
         case SET_PARAM_MODE:        return "Mode";
         case SET_PARAM_TUNING_STEP: return "Tuning Step";
+        case SET_PARAM_VOX:         return "VOX";
         default:                    return "Unknown";
     }
 }
@@ -162,7 +163,16 @@ static void announce_current_value(SetModeParameter param) {
                 snprintf(buffer, sizeof(buffer), "Mode %s", mode);
             }
             break;
-            
+        case SET_PARAM_VOX:
+            value = radio_get_vox_status();
+            if (value >= 0) {
+                snprintf(buffer, sizeof(buffer),
+                        "VOX %s", value ? "on" : "off");
+            } else {
+                snprintf(buffer, sizeof(buffer),
+                        "VOX status not available");
+            }
+            break;
         default:
             snprintf(buffer, sizeof(buffer), "Select parameter");
             break;
@@ -253,6 +263,14 @@ static void apply_value(void) {
                 }
             }
             break;
+        case SET_PARAM_VOX:
+            value = radio_get_vox_status();
+            if (value >= 0) {
+                snprintf(buffer, sizeof(buffer), "Vox %s", value ? "on" : "off");
+            } else {
+                snprintf(buffer, sizeof(buffer), "Vox status not available");
+            }
+            break;
             
         default:
             break;
@@ -329,6 +347,16 @@ static void toggle_compression(bool enable) {
     }
 }
 
+static void toggle_vox(bool enable) {
+    if (radio_set_vox_status(enable) == 0) {
+        speech_say_text(enable ? "Vox on" : "Vox off");
+    } else {
+        if (config_get_key_beep_enabled()) {
+            comm_play_beep(COMM_BEEP_ERROR);
+        }
+        speech_say_text("Failed");
+    }
+}
 // ============================================================================
 // AGC Handlers
 // ============================================================================
@@ -442,6 +470,9 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
                 case SET_PARAM_COMPRESSION:
                     toggle_compression(false);
                     return true;
+                case SET_PARAM_VOX:
+                    toggle_vox(false);
+                    return true;
                 default:
                     // For other parameters, exit Set Mode
                     set_mode_exit();
@@ -519,6 +550,10 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         if (key == '2' && !is_hold && !is_shifted) {
             return select_parameter(SET_PARAM_TUNING_STEP);
         }
+        // [Shift]+[1] - VOX
+        if (key == '1' && !is_hold && is_shifted) {
+            return select_parameter(SET_PARAM_VOX);
+        }
         // Consume but ignore other keys in idle state
         return true;
     }
@@ -565,6 +600,9 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
                     break;
                 case SET_PARAM_COMPRESSION:
                     toggle_compression(true);
+                    break;
+                case SET_PARAM_VOX:
+                    toggle_vox(true);
                     break;
                 default:
                     break;

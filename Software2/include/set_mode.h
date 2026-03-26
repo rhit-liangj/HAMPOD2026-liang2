@@ -35,7 +35,8 @@ typedef enum {
     SET_PARAM_PREAMP,
     SET_PARAM_ATTENUATION,
     SET_PARAM_MODE,
-    SET_PARAM_TUNING_STEP 
+    SET_PARAM_TUNING_STEP,
+    SET_PARAM_VOX
 } SetModeParameter;
 
 // ============================================================================
