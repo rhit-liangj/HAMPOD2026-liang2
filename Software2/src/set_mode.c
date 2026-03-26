@@ -64,6 +64,7 @@ static const char* param_name(SetModeParameter param) {
         case SET_PARAM_PREAMP:      return "Pre Amp";
         case SET_PARAM_ATTENUATION: return "Attenuation";
         case SET_PARAM_MODE:        return "Mode";
+        case SET_PARAM_TUNING_STEP: return "Tuning Step";
         default:                    return "Unknown";
     }
 }
@@ -136,7 +137,14 @@ static void announce_current_value(SetModeParameter param) {
                 snprintf(buffer, sizeof(buffer), "Pre amp not available");
             }
             break;
-            
+        case SET_PARAM_TUNING_STEP:
+            value = radio_get_tuning_step();
+            if (value > 0) {
+                snprintf(buffer, sizeof(buffer), "Tuning step %d hertz", value);
+            } else {
+                snprintf(buffer, sizeof(buffer), "Tuning step not available");
+            }
+            break;    
         case SET_PARAM_ATTENUATION:
             value = radio_get_attenuation();
             if (value == 0) {
@@ -234,6 +242,14 @@ static void apply_value(void) {
                     snprintf(buffer, sizeof(buffer), "Attenuation off");
                 } else {
                     snprintf(buffer, sizeof(buffer), "Attenuation %d D B", value);
+                }
+            }
+            break;
+        case SET_PARAM_TUNING_STEP:
+            if (value > 0) {
+                result = radio_set_tuning_step(value);
+                if (result == 0) {
+                    snprintf(buffer, sizeof(buffer), "Tuning step set to %d hertz", value);
                 }
             }
             break;
@@ -499,7 +515,10 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         if (key == '0' && !is_hold && !is_shifted) {
             return select_parameter(SET_PARAM_MODE);
         }
-        
+        // [Shift]+[2] - Tuning Step
+        if (key == '2' && !is_hold && is_shifted) {
+            return select_parameter(SET_PARAM_TUNING_STEP);
+        }
         // Consume but ignore other keys in idle state
         return true;
     }

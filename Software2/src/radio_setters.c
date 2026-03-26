@@ -641,3 +641,29 @@ int radio_set_mode_by_index(int mode_index) {
     DEBUG_PRINT("radio_set_mode_by_index: Set to %s\n", rig_strrmode(mode));
     return 0;
 }
+
+int radio_set_tuning_step(int step_hz) {
+    pthread_mutex_lock(&g_rig_mutex);
+
+    if (!g_connected || !g_rig) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        return -1;
+    }
+
+    if (step_hz <= 0) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        return -1;
+    }
+
+    int retcode = rig_set_ts(g_rig, RIG_VFO_CURR, (shortfreq_t)step_hz);
+
+    pthread_mutex_unlock(&g_rig_mutex);
+
+    if (retcode != RIG_OK) {
+        DEBUG_PRINT("radio_set_tuning_step: %s\n", rigerror(retcode));
+        return -1;
+    }
+
+    DEBUG_PRINT("radio_set_tuning_step: Set to %d Hz\n", step_hz);
+    return 0;
+}

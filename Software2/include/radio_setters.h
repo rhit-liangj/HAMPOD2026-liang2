@@ -191,4 +191,7 @@ int radio_cycle_mode(void);
  */
 int radio_set_mode_by_index(int mode_index);
 
+
+int radio_set_tuning_step(int step_hz);
+
 #endif // RADIO_SETTERS_H

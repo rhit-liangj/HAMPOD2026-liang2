@@ -34,7 +34,8 @@ typedef enum {
     SET_PARAM_AGC,
     SET_PARAM_PREAMP,
     SET_PARAM_ATTENUATION,
-    SET_PARAM_MODE
+    SET_PARAM_MODE,
+    SET_PARAM_TUNING_STEP 
 } SetModeParameter;
 
 // ============================================================================
@@ -125,5 +126,6 @@ const char* set_mode_get_value_buffer(void);
  * @brief Clear the value buffer
  */
 void set_mode_clear_value(void);
+
 
 #endif // SET_MODE_H
