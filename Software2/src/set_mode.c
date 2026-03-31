@@ -512,18 +512,13 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
             return select_parameter(SET_PARAM_MIC_GAIN);
         }
         
-        if(key == '9'){
-            if(is_shifted && !is_hold){
-                speech_say_text("test shift nine");
-            }
+        // [Shift]+[9] - Compression
+        if (key == '9' && !is_hold && is_shifted  ) {
+            // add speech debug
+            speech_say_text("test shift nine in set");
+            return select_parameter(SET_PARAM_COMPRESSION);
+            // make set mode idle to False
         }
-        // // [Shift]+[9] - Compression
-        // if (key == '9' && !is_hold && is_shifted  ) {
-        //     // add speech debug
-            
-        //     return select_parameter(SET_PARAM_COMPRESSION);
-        //     // make set mode idle to False
-        // }
         
         // [7] - Noise Blanker
         if (key == '7' && !is_hold && !is_shifted) {
@@ -563,7 +558,7 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
             return select_parameter(SET_PARAM_VOX);
         }
         // Consume but ignore other keys in idle state
-        return true;
+        return false;
     }
     
     // =========================================================================
