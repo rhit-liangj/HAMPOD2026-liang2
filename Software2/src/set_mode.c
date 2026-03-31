@@ -501,11 +501,8 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     // SET_MODE_IDLE: Parameter Selection Keys
     // =========================================================================
     
-    while (g_state == SET_MODE_IDLE) { //debug
+    if (g_state == SET_MODE_IDLE) { //debug
         // [9] Hold - Power Level
-        if (is_shifted){
-            speech_say_text("shift pressed");
-        }
         if (key == '9' && is_hold && !is_shifted) {
             return select_parameter(SET_PARAM_POWER);
         }
@@ -515,13 +512,18 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
             return select_parameter(SET_PARAM_MIC_GAIN);
         }
         
-        // [Shift]+[9] - Compression
-        if (key == '9' && !is_hold && is_shifted  ) {
-            // add speech debug
-            speech_say_text("test shift nine");
-            return select_parameter(SET_PARAM_COMPRESSION);
-            // make set mode idle to False
+        if(key == '9'){
+            if(is_shifted && !is_hold){
+                speech_say_text("test shift nine");
+            }
         }
+        // // [Shift]+[9] - Compression
+        // if (key == '9' && !is_hold && is_shifted  ) {
+        //     // add speech debug
+            
+        //     return select_parameter(SET_PARAM_COMPRESSION);
+        //     // make set mode idle to False
+        // }
         
         // [7] - Noise Blanker
         if (key == '7' && !is_hold && !is_shifted) {
