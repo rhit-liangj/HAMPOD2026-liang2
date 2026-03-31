@@ -503,6 +503,9 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     
     while (g_state == SET_MODE_IDLE) { //debug
         // [9] Hold - Power Level
+        if (is_shifted){
+            speech_say_text("shift pressed");
+        }
         if (key == '9' && is_hold && !is_shifted) {
             return select_parameter(SET_PARAM_POWER);
         }
@@ -513,7 +516,7 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         }
         
         // [Shift]+[9] - Compression
-        if (key == '9' &&  is_shifted && !is_hold) {
+        if (key == '9' && !is_hold && is_shifted  ) {
             // add speech debug
             speech_say_text("test shift nine");
             return select_parameter(SET_PARAM_COMPRESSION);
