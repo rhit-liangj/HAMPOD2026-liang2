@@ -501,7 +501,7 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     // SET_MODE_IDLE: Parameter Selection Keys
     // =========================================================================
     
-    if (g_state == SET_MODE_IDLE) { //debug
+    while (g_state == SET_MODE_IDLE) { //debug
 
         // [9] Hold - Power Level
         if (key == '9' && is_hold && !is_shifted) {
