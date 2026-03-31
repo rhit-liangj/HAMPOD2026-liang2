@@ -447,7 +447,7 @@ void set_mode_clear_value(void) {
 // ============================================================================
 
 bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
-    DEBUG_PRINT("set_mode_handle_key: key='%c' hold=%d shift=%d state=%d\n", 
+    printf("set_mode_handle_key: key='%c' hold=%d shift=%d state=%d\n", 
                 key, is_hold, is_shifted, g_state);
     
     // [B] - Toggle Set Mode or toggle OFF for toggle parameters
@@ -502,6 +502,7 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     // =========================================================================
     
     if (g_state == SET_MODE_IDLE) { //debug
+
         // [9] Hold - Power Level
         if (key == '9' && is_hold && !is_shifted) {
             return select_parameter(SET_PARAM_POWER);
