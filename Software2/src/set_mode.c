@@ -502,12 +502,12 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     // =========================================================================
     
     if (g_state == SET_MODE_IDLE) { //debug
-        if (key == 'X' && !is_shifted){
-            is_shifted = true;
-        }
-        if (key == 'X' && is_shifted){
-            is_shifted = false;
-        }
+        // if (key == 'X' && !is_shifted){
+        //     is_shifted = true;
+        // }
+        // if (key == 'X' && is_shifted){
+        //     is_shifted = false;
+        // }
         // [9] Hold - Power Level
         if (key == '9' && is_hold && !is_shifted) {
             return select_parameter(SET_PARAM_POWER);
@@ -566,7 +566,8 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
             speech_say_text("shift one pressed in set");
         }
         // Consume but ignore other keys in idle state
-        return true;
+        // in order for shift to work, need to return false
+        return false;
     }
     
     // =========================================================================
