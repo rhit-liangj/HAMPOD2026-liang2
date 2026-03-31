@@ -556,6 +556,7 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         }
         // [Shift]+[1] - VOX
         if (key == '1' && !is_hold && !is_shifted) {
+            speech_say_text("test set");
             return select_parameter(SET_PARAM_VOX);
         }
         // Consume but ignore other keys in idle state
