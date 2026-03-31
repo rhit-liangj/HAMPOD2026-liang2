@@ -502,10 +502,10 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     // =========================================================================
     
     if (g_state == SET_MODE_IDLE) { //debug
-        if (key == '/' && !is_shifted){
+        if (key == '8' && !is_shifted){
             is_shifted = true;
         }
-        if (key == '1' && is_shifted){
+        if (key == '8' && is_shifted){
             is_shifted = false;
         }
         // [9] Hold - Power Level
