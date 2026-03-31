@@ -517,7 +517,6 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
             // add speech debug
             speech_say_text("test shift nine in set");
             return select_parameter(SET_PARAM_COMPRESSION);
-            // make set mode idle to False
         }
         
         // [7] - Noise Blanker
@@ -556,6 +555,9 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         // [Shift]+[1] - VOX
         if (key == '1' && !is_hold && !is_shifted) {
             return select_parameter(SET_PARAM_VOX);
+        }
+        if(key == '1' && !is_hold && is_shifted){
+            speech_say_text("shift one pressed in set");
         }
         // Consume but ignore other keys in idle state
         return false;
