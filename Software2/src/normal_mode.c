@@ -22,6 +22,7 @@
 
 static bool g_verbosity_enabled = true;  // Auto-announcements on by default
 
+
 // ============================================================================
 // Internal Helpers
 // ============================================================================
@@ -99,7 +100,7 @@ void normal_mode_init(void) {
 
 bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     DEBUG_PRINT("normal_mode_handle_key: key='%c' hold=%d shift=%d\n", key, is_hold, is_shifted);
-    
+    if(in_set_mode = false){
     // [0] - Announce current mode
     if (key == '0' && !is_hold) {
         const char* mode = radio_get_mode_string();
@@ -416,7 +417,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         }
         return true;
     }
-    
+}
     // Key not handled by normal mode
     return false;
 }
