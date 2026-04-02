@@ -98,7 +98,7 @@ void normal_mode_init(void) {
 // Key Handling
 // ============================================================================
 
-bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
+bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set_mode) {
     DEBUG_PRINT("normal_mode_handle_key: key='%c' hold=%d shift=%d\n", key, is_hold, is_shifted);
     // [0] - Announce current mode
     if (key == '0' && !is_hold) {
@@ -107,7 +107,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         return true;
     }
     // [1] - VFO selection
-    if (key == '1') {
+    if (key == '1'&& !in_set_mode) {
         if(is_shifted && !is_hold){
         int vox = radio_get_vox_status();
 
@@ -119,7 +119,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
             speech_say_text("VOX is off");
             }
         }
-        else if(is_shifted && is_hold){ 
+        else if(is_shifted && is_hold ){ 
         // shift + hold → break-in status
             int break_in = radio_get_break_in_status();
 
