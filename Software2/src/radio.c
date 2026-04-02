@@ -14,6 +14,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <hamlib/rig.h>
+#include <stdbool.h>
 
 // ============================================================================
 // Module State (non-static for access by radio_queries.c)
