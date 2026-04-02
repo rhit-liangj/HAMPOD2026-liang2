@@ -567,7 +567,7 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         }
         // Consume but ignore other keys in idle state
         // in order for shift to work, need to return false
-        return false;
+        // return false;
     }
     
     // =========================================================================

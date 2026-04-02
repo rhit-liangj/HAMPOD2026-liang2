@@ -370,7 +370,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     // [9] - Compression (shift+press) / Power (hold)
     if (key == '9') {
         char buffer[64];
-        if (is_shifted && !is_hold) {
+        if (is_shifted && !is_hold /*&& not in set mode idle*/) {
             // [Shift]+[9] - Compression query
             int comp = radio_get_compression();
             bool comp_on = radio_get_compression_enabled();
