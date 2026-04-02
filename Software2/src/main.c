@@ -64,7 +64,7 @@ static void on_keypress(const KeyPressEvent *kp) {
   // Route to set mode first (if active, it takes priority for ALL keys
   // including [A])
   if (set_mode_is_active()) {
-    if (set_mode_handle_key(kp->key, kp->isHold, was_shifted)) {
+    if (set_mode_handle_key(kp->key, kp->isHold, was_shifted,in_set_mode)) {
       // Auto-clear shift after a shifted key is consumed
       if (was_shifted) {
         g_shift_active = false;
@@ -100,7 +100,7 @@ static void on_keypress(const KeyPressEvent *kp) {
   }
 
   // Route to normal mode (pass shift state)
-  if (normal_mode_handle_key(kp->key, kp->isHold, was_shifted)) {
+  if (normal_mode_handle_key(kp->key, kp->isHold, was_shifted, in_set_mode)) {
     // Auto-clear shift after a shifted key is consumed
     if (was_shifted) {
       g_shift_active = false;
