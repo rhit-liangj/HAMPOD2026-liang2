@@ -12,7 +12,7 @@
 #include "hampod_core.h"
 #include "comm.h"
 #include "config.h"
-
+#include "radio.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -410,7 +410,7 @@ void set_mode_enter(void) {
     if (g_state == SET_MODE_OFF) {
         g_state = SET_MODE_IDLE;
         g_current_param = SET_PARAM_NONE;
-        
+        in_set_mode = true;
         clear_value_buffer();
         speech_say_text("Set");
         DEBUG_PRINT("set_mode_enter: Entered Set Mode\n");
@@ -420,6 +420,7 @@ void set_mode_enter(void) {
 void set_mode_exit(void) {
     g_state = SET_MODE_OFF;
     g_current_param = SET_PARAM_NONE;
+    in_set_mode = false; 
     clear_value_buffer();
     speech_say_text("Set Off");
     DEBUG_PRINT("set_mode_exit: Exited Set Mode\n");
