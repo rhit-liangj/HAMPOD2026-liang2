@@ -414,7 +414,7 @@ void set_mode_enter(void) {
         in_set_mode = true;
         clear_value_buffer();
         speech_say_text("Set");
-        speech_say_text(in_set_mode ? "Set mode is on" : "Set mode is off");
+        // speech_say_text(in_set_mode ? "Set mode is on" : "Set mode is off");
         DEBUG_PRINT("set_mode_enter: Entered Set Mode\n");
     }
 }
@@ -425,7 +425,7 @@ void set_mode_exit(void) {
     in_set_mode = false; 
     clear_value_buffer();
     speech_say_text("Set Off");
-    speech_say_text(in_set_mode ? "Set mode is on" : "Set mode is off");
+    // speech_say_text(in_set_mode ? "Set mode is on" : "Set mode is off");
     DEBUG_PRINT("set_mode_exit: Exited Set Mode\n");
 }
 
