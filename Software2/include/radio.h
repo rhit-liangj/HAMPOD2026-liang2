@@ -99,6 +99,6 @@ void radio_stop_polling(void);
  */
 bool radio_is_polling(void);
 
-bool in_set_mode; 
+extern bool in_set_mode;
 
 #endif // RADIO_H
