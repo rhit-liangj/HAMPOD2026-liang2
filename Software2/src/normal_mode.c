@@ -112,7 +112,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         int vox = radio_get_vox_status();
 
         if (vox < 0) {
-            speech_say_text("VOX status unavailable");
+            speech_say_text("VOX status unavailable, shift one pressed");
             } else if (vox == 1) {
             speech_say_text("VOX is now on");
             } else {
