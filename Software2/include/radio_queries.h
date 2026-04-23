@@ -131,4 +131,6 @@ int radio_get_filter_number(void);
 int radio_get_tuner_status(void);
 
 int radio_get_antenna(void);
+
+float radio_get_swr(void);
 #endif // RADIO_QUERIES_H

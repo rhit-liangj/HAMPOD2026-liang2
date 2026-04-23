@@ -569,3 +569,24 @@ int radio_get_antenna(void) {
 
     return ant;
 }
+
+float radio_get_swr(void) {
+    pthread_mutex_lock(&g_rig_mutex);
+
+    if (!g_connected || !g_rig) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        return -999.0f;
+    }
+
+    value_t val;
+    int retcode = rig_get_level(g_rig, RIG_VFO_CURR, RIG_LEVEL_SWR, &val);
+
+    pthread_mutex_unlock(&g_rig_mutex);
+
+    if (retcode != RIG_OK) {
+        DEBUG_PRINT("radio_get_swr: %s\n", rigerror(retcode));
+        return -999.0f;
+    }
+
+    return val.f;
+}

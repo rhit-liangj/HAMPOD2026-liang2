@@ -102,10 +102,26 @@ void normal_mode_init(void) {
 bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set_mode) {
     DEBUG_PRINT("normal_mode_handle_key: key='%c' hold=%d shift=%d\n", key, is_hold, is_shifted);
     // [0] - Announce current mode
-    if (key == '0' && !is_hold) {
+    if (key == '0' && !in_set_mode) {
+        if(!is_hold && !is_shifted){
         const char* mode = radio_get_mode_string();
         speech_say_text(mode);
         return true;
+        }
+        else if(is_shifted && !is_hold){
+            float swr = radio_get_swr();
+            char buffer[64];
+
+            if (swr > 0.0f) {
+                snprintf(buffer, sizeof(buffer), "S W R %.1f", swr);
+            } else {
+                snprintf(buffer, sizeof(buffer), "S W R not available");
+            }
+
+            speech_say_text(buffer);
+            return true;
+
+        }
     }
     // [1] - VFO selection
     if (key == '1'&& !in_set_mode) { // added not in set mode condition, only execute this when not in set mode
