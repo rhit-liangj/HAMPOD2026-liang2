@@ -120,7 +120,6 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
 
             speech_say_text(buffer);
             return true;
-
         }
     }
     // [1] - VFO selection
@@ -339,7 +338,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
     }
     // [7] - Noise Blanker query
     if (key == '7' && !in_set_mode){
-        if(is_shifted && !is_hold){
+        if(is_shifted && !is_hold){//shift 7, attenna selection status
             int ant = radio_get_antenna();
             char buffer[64];
 

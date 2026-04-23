@@ -557,8 +557,13 @@ int radio_get_antenna(void) {
         return -999;
     }
 
-    int ant = 0;
-    int retcode = rig_get_ant(g_rig, RIG_VFO_CURR, &ant);
+    ant_t ant_curr = 0;
+    ant_t ant_tx = 0;
+    ant_t ant_rx = 0;
+    value_t option = {0};
+
+    int retcode = rig_get_ant(g_rig, RIG_VFO_CURR, 0,
+                              &option, &ant_curr, &ant_tx, &ant_rx);
 
     pthread_mutex_unlock(&g_rig_mutex);
 
@@ -567,7 +572,7 @@ int radio_get_antenna(void) {
         return -999;
     }
 
-    return ant;
+    return (ant_curr > 0) ? (int)ant_curr : -999;
 }
 
 float radio_get_swr(void) {
