@@ -324,7 +324,17 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
     // [7] - Noise Blanker query
     if (key == '7' && !in_set_mode){
         if(is_shifted && !is_hold){
-            speech_say_text("shift seven");
+            int ant = radio_get_antenna();
+            char buffer[64];
+
+            if (ant > 0) {
+                snprintf(buffer, sizeof(buffer), "Antenna %d", ant);
+            } else {
+                snprintf(buffer, sizeof(buffer), "Antenna not available");
+            }
+
+            speech_say_text(buffer);
+            return true;
         }
         else if(!is_hold){
             char buffer[64];

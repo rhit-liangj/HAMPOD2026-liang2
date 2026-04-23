@@ -129,4 +129,6 @@ int radio_get_apf_status(void);
 int radio_get_filter_number(void); 
 
 int radio_get_tuner_status(void);
+
+int radio_get_antenna(void);
 #endif // RADIO_QUERIES_H

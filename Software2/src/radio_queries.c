@@ -548,3 +548,24 @@ int radio_get_tuner_status(void) {
 
     return status ? 1 : 0;
 }
+
+int radio_get_antenna(void) {
+    pthread_mutex_lock(&g_rig_mutex);
+
+    if (!g_connected || !g_rig) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        return -999;
+    }
+
+    int ant = 0;
+    int retcode = rig_get_ant(g_rig, RIG_VFO_CURR, &ant);
+
+    pthread_mutex_unlock(&g_rig_mutex);
+
+    if (retcode != RIG_OK) {
+        DEBUG_PRINT("radio_get_antenna: %s\n", rigerror(retcode));
+        return -999;
+    }
+
+    return ant;
+}
