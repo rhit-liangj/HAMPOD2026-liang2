@@ -527,3 +527,24 @@ int radio_get_filter_number(void) {
         return 3;  // narrow
     }
 }
+
+int radio_get_tuner_status(void) {
+    pthread_mutex_lock(&g_rig_mutex);
+
+    if (!g_connected || !g_rig) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        return -999;
+    }
+
+    int status = 0;
+    int retcode = rig_get_func(g_rig, RIG_VFO_CURR, RIG_FUNC_TUNER, &status);
+
+    pthread_mutex_unlock(&g_rig_mutex);
+
+    if (retcode != RIG_OK) {
+        DEBUG_PRINT("radio_get_tuner_status: %s\n", rigerror(retcode));
+        return -999;
+    }
+
+    return status ? 1 : 0;
+}

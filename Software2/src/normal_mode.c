@@ -327,16 +327,25 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
             speech_say_text("shift seven");
         }
         else if(!is_hold){
-        char buffer[64];
-        bool nb_on = radio_get_nb_enabled();
-        int nb_level = radio_get_nb_level();
-        snprintf(buffer, sizeof(buffer), "Noise blanker %s, level %d", 
-                 nb_on ? "on" : "off", nb_level >= 0 ? nb_level : 0);
-        speech_say_text(buffer);
-        return true;
+            char buffer[64];
+            bool nb_on = radio_get_nb_enabled();
+            int nb_level = radio_get_nb_level();
+            snprintf(buffer, sizeof(buffer), "Noise blanker %s, level %d", 
+                    nb_on ? "on" : "off", nb_level >= 0 ? nb_level : 0);
+            speech_say_text(buffer);
+            return true;
         }
-        else{
-            speech_say_text("hold seven");
+        else{// attena tuner status
+            int tuner = radio_get_tuner_status();
+            char buffer[64];
+
+            if (tuner >= 0) {
+                snprintf(buffer, sizeof(buffer), "Tuner %s", tuner ? "on" : "off");
+            } else {
+                snprintf(buffer, sizeof(buffer), "Tuner status not available");
+            }
+            speech_say_text(buffer);
+            return true;
         }
     }
 
