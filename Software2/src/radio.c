@@ -23,7 +23,7 @@
 RIG *g_rig = NULL;
 bool g_connected = false;
 pthread_mutex_t g_rig_mutex = PTHREAD_MUTEX_INITIALIZER;
-bool in_set_mode = false; 
+bool in_set_mode = false; // a flag for set mode
 
 // Polling state
 static pthread_t g_poll_thread;

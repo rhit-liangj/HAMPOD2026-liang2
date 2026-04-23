@@ -411,10 +411,9 @@ void set_mode_enter(void) {
     if (g_state == SET_MODE_OFF) {
         g_state = SET_MODE_IDLE;
         g_current_param = SET_PARAM_NONE;
-        in_set_mode = true;
+        in_set_mode = true; // enters set mode 
         clear_value_buffer();
         speech_say_text("Set");
-        // speech_say_text(in_set_mode ? "Set mode is on" : "Set mode is off");
         DEBUG_PRINT("set_mode_enter: Entered Set Mode\n");
     }
 }
@@ -422,10 +421,9 @@ void set_mode_enter(void) {
 void set_mode_exit(void) {
     g_state = SET_MODE_OFF;
     g_current_param = SET_PARAM_NONE;
-    in_set_mode = false; 
+    in_set_mode = false;  // exit set mode
     clear_value_buffer();
     speech_say_text("Set Off");
-    // speech_say_text(in_set_mode ? "Set mode is on" : "Set mode is off");
     DEBUG_PRINT("set_mode_exit: Exited Set Mode\n");
 }
 
@@ -563,12 +561,12 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         if (key == '2' && !is_hold && !is_shifted) {
             return select_parameter(SET_PARAM_TUNING_STEP);
         }
-        // [Shift]+[1] - VOX
+        
         if (key == '1' && !is_hold && !is_shifted) {
-            return select_parameter(SET_PARAM_VOX);
+        // [Shift]+[1] - VOX    
         }
         if(key == '1' && !is_hold && is_shifted){
-            speech_say_text("shift one pressed in set");
+            return select_parameter(SET_PARAM_VOX);
         }
         // Consume but ignore other keys in idle state
         // in order for shift to work, need to return false

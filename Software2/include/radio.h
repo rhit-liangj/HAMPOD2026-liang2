@@ -99,6 +99,6 @@ void radio_stop_polling(void);
  */
 bool radio_is_polling(void);
 
-extern bool in_set_mode;
+extern bool in_set_mode; // allow other files to access this variable
 
 #endif // RADIO_H

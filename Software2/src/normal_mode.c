@@ -108,7 +108,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         return true;
     }
     // [1] - VFO selection
-    if (key == '1'&& !in_set_mode) {
+    if (key == '1'&& !in_set_mode) { // added not in set mode condition, only execute this when not in set mode
         if(is_shifted && !is_hold){
         int vox = radio_get_vox_status();
 
@@ -162,7 +162,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
     }
     
     // [2] - Announce current frequency
-    if (key == '2'){
+    if (key == '2' && !in_set_mode){
         if(is_shifted && !is_hold){
             //shift 2 tunning step status
             int ts = radio_get_tuning_step();
@@ -200,7 +200,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         }
     }
     // [3] 
-    if (key == '3'){
+    if (key == '3' && !in_set_mode){
         if(is_shifted && !is_hold){
             //shift 3 Choose Duplex direction
         }
@@ -228,7 +228,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
     }
     
     // [4] - PreAmp (press) / AGC (hold) / Attenuation (shift+press)
-    if (key == '4') {
+    if (key == '4'&& !in_set_mode) {
         char buffer[64];
         if (is_shifted && !is_hold) {
             // [Shift]+[4] - Attenuation query
@@ -262,7 +262,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         }
     }
     // [5] 
-    if(key == '5'){
+    if(key == '5' && !in_set_mode){
         if(is_shifted && !is_hold){
             speech_say_text("shift five");
         }
@@ -275,7 +275,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
     }
 
     // [6]
-    if (key == '6') {
+    if (key == '6'&& !in_set_mode) {
         if (is_shifted && !is_hold) {
             // shift + press 6 -> get filter number
             int filter = radio_get_filter_number();
@@ -322,7 +322,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         }
     }
     // [7] - Noise Blanker query
-    if (key == '7'){
+    if (key == '7' && !in_set_mode){
         if(is_shifted && !is_hold){
             speech_say_text("shift seven");
         }
@@ -342,7 +342,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
 
     
     // [8] - Noise Reduction (press) / Mic Gain (hold)
-    if (key == '8') {
+    if (key == '8'&& !in_set_mode) {
         char buffer[64];
         if (is_shifted && !is_hold){
             speech_say_text("shift 8");
@@ -369,7 +369,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
     }
     
     // [9] - Compression (shift+press) / Power (hold)
-    if (key == '9') {
+    if (key == '9' && !in_set_mode) {
         char buffer[64];
         if (is_shifted && !is_hold /*&& not in set mode idle*/) {
             // [Shift]+[9] - Compression query
