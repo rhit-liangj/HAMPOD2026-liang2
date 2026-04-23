@@ -595,3 +595,55 @@ float radio_get_swr(void) {
 
     return val.f;
 }
+
+int radio_toggle_data_mode(void) {
+    pthread_mutex_lock(&g_rig_mutex);
+
+    if (!g_connected || !g_rig) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        return -999;
+    }
+
+    rmode_t mode;
+    pbwidth_t width;
+
+    int retcode = rig_get_mode(g_rig, RIG_VFO_CURR, &mode, &width);
+    if (retcode != RIG_OK) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        DEBUG_PRINT("radio_toggle_data_mode get: %s\n", rigerror(retcode));
+        return -999;
+    }
+
+    rmode_t new_mode = mode;
+
+    // Toggle logic
+    switch (mode) {
+        case RIG_MODE_USB:
+            new_mode = RIG_MODE_PKTUSB;
+            break;
+        case RIG_MODE_LSB:
+            new_mode = RIG_MODE_PKTLSB;
+            break;
+        case RIG_MODE_PKTUSB:
+            new_mode = RIG_MODE_USB;
+            break;
+        case RIG_MODE_PKTLSB:
+            new_mode = RIG_MODE_LSB;
+            break;
+        default:
+            // Not supported for this mode
+            pthread_mutex_unlock(&g_rig_mutex);
+            return -999;
+    }
+
+    retcode = rig_set_mode(g_rig, RIG_VFO_CURR, new_mode, width);
+
+    pthread_mutex_unlock(&g_rig_mutex);
+
+    if (retcode != RIG_OK) {
+        DEBUG_PRINT("radio_toggle_data_mode set: %s\n", rigerror(retcode));
+        return -999;
+    }
+
+    return 0;
+}

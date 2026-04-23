@@ -121,6 +121,14 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
             speech_say_text(buffer);
             return true;
         }
+        else if(!is_shifted && is_hold){
+            if (radio_toggle_data_mode() == 0) {
+                const char* mode = radio_get_mode_string();
+                speech_say_text(mode);
+            } else {
+                speech_say_text("Failed");
+            }
+        }
     }
     // [1] - VFO selection
     if (key == '1'&& !in_set_mode) { // added not in set mode condition, only execute this when not in set mode
