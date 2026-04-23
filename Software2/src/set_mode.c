@@ -67,6 +67,7 @@ static const char* param_name(SetModeParameter param) {
         case SET_PARAM_MODE:        return "Mode";
         case SET_PARAM_TUNING_STEP: return "Tuning Step";
         case SET_PARAM_VOX:         return "VOX";
+        case SET_PARAM_FILTER_NUMBER: return "Filter Number";
         default:                    return "Unknown";
     }
 }
@@ -174,6 +175,15 @@ static void announce_current_value(SetModeParameter param) {
                         "VOX status not available");
             }
             break;
+        case SET_PARAM_FILTER_NUMBER:
+            value = radio_get_filter_number();
+            if (value >= 1 && value <= 3) {
+                snprintf(buffer, sizeof(buffer), "Filter %d", value);
+            } else {
+                snprintf(buffer, sizeof(buffer), "Filter number not available");
+            }
+            break;
+
         default:
             snprintf(buffer, sizeof(buffer), "Select parameter");
             break;
@@ -272,7 +282,15 @@ static void apply_value(void) {
                 snprintf(buffer, sizeof(buffer), "Vox status not available");
             }
             break;
-            
+        case SET_PARAM_FILTER_NUMBER:
+            if (value >= 1 && value <= 3) {
+                result = radio_set_filter_number(value);
+                if (result == 0) {
+                    snprintf(buffer, sizeof(buffer), "Filter %d", value);
+                }
+            }
+            break;
+
         default:
             break;
     }
@@ -532,7 +550,10 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         if (key == '7' && !is_hold && !is_shifted) {
             return select_parameter(SET_PARAM_NB);
         }
-        
+        // [6] - filter number
+        if (key == '6' && !is_hold && is_shifted) {
+            return select_parameter(SET_PARAM_FILTER_NUMBER);
+        }
         // [8] - Noise Reduction
         if (key == '8' && !is_hold && !is_shifted) {
             return select_parameter(SET_PARAM_NR);
@@ -563,8 +584,9 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         }
         
         if (key == '1' && !is_hold && !is_shifted) {
-        // [Shift]+[1] - VOX    
+        
         }
+        //shift 1 VOX status
         if(key == '1' && !is_hold && is_shifted){
             return select_parameter(SET_PARAM_VOX);
         }

@@ -195,5 +195,6 @@ int radio_set_mode_by_index(int mode_index);
 int radio_set_tuning_step(int step_hz);
 
 int radio_set_vox_status(bool enable);
-
+// int radio_get_filter_number(void);
+int radio_set_filter_number(int filter_num);
 #endif // RADIO_SETTERS_H
