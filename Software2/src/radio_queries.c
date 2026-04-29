@@ -310,7 +310,6 @@ int radio_get_break_in_status(void) {
 // toggle memory scan
 int radio_toggle_memory_scan(void)
 {
-    // fix later
     // pthread_mutex_lock(&g_rig_mutex);
 
     // if (!g_connected || !g_rig) {
@@ -646,4 +645,27 @@ int radio_toggle_data_mode(void) {
     }
 
     return 0;
+}
+
+int radio_get_keyer_speed(void) {
+    pthread_mutex_lock(&g_rig_mutex);
+
+    if (!g_connected || !g_rig) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        return -999;
+    }
+
+    value_t val;
+    memset(&val, 0, sizeof(val));
+
+    int retcode = rig_get_level(g_rig, RIG_VFO_CURR, RIG_LEVEL_KEYSPD, &val);
+
+    pthread_mutex_unlock(&g_rig_mutex);
+
+    if (retcode != RIG_OK) {
+        DEBUG_PRINT("radio_get_keyer_speed: %s\n", rigerror(retcode));
+        return -999;
+    }
+
+    return val.i;   // WPM
 }

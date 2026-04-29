@@ -68,6 +68,7 @@ static const char* param_name(SetModeParameter param) {
         case SET_PARAM_TUNING_STEP: return "Tuning Step";
         case SET_PARAM_VOX:         return "VOX";
         case SET_PARAM_FILTER_NUMBER: return "Filter Number";
+        case SET_PARAM_KEYER_SPEED: return "Keyer Speed";
         default:                    return "Unknown";
     }
 }
@@ -183,6 +184,16 @@ static void announce_current_value(SetModeParameter param) {
                 snprintf(buffer, sizeof(buffer), "Filter number not available");
             }
             break;
+        case SET_PARAM_KEYER_SPEED:
+            value = radio_get_keyer_speed();
+            if (value > 0) {
+                snprintf(buffer, sizeof(buffer),
+                        "Keyer speed %d words per minute", value);
+            } else {
+                snprintf(buffer, sizeof(buffer),
+                        "Keyer speed not available");
+            }
+            break;
 
         default:
             snprintf(buffer, sizeof(buffer), "Select parameter");
@@ -287,6 +298,15 @@ static void apply_value(void) {
                 result = radio_set_filter_number(value);
                 if (result == 0) {
                     snprintf(buffer, sizeof(buffer), "Filter %d", value);
+                }
+            }
+            break;
+        case SET_PARAM_KEYER_SPEED:
+            if (value > 0) {
+                result = radio_set_keyer_speed(value);
+                if (result == 0) {
+                    snprintf(buffer, sizeof(buffer),
+                            "Keyer speed set to %d", value);
                 }
             }
             break;
@@ -522,16 +542,13 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     // SET_MODE_IDLE: Parameter Selection Keys
     // =========================================================================
     
-    if (g_state == SET_MODE_IDLE) { //debug
-        // if (key == 'X' && !is_shifted){
-        //     is_shifted = true;
-        // }
-        // if (key == 'X' && is_shifted){
-        //     is_shifted = false;
-        // }
-        // [9] Hold - Power Level
+    if (g_state == SET_MODE_IDLE) { 
         if (key == '9' && is_hold && !is_shifted) {
             return select_parameter(SET_PARAM_POWER);
+        }
+        //shift 8 keyer speed
+        if(key == '8' && !is_hold && is_shifted){
+            return select_parameter(SET_PARAM_KEYER_SPEED);
         }
         
         // [8] Hold - Mic Gain
@@ -584,7 +601,7 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         }
         
         if (key == '1' && !is_hold && !is_shifted) {
-        
+            speech_say_text("set one pressed"); 
         }
         //shift 1 VOX status
         if(key == '1' && !is_hold && is_shifted){

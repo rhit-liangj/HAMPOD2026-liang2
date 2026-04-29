@@ -747,3 +747,33 @@ int radio_set_filter_number(int filter_num) {
 
     return 0;
 }
+
+int radio_set_keyer_speed(int wpm) {
+    pthread_mutex_lock(&g_rig_mutex);
+
+    if (!g_connected || !g_rig) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        return -999;
+    }
+
+    // Optional: basic sanity range (IC-7300 is typically ~6–48 WPM)
+    if (wpm < 5 || wpm > 60) {
+        pthread_mutex_unlock(&g_rig_mutex);
+        return -999;
+    }
+
+    value_t val;
+    memset(&val, 0, sizeof(val));
+    val.i = wpm;
+
+    int retcode = rig_set_level(g_rig, RIG_VFO_CURR, RIG_LEVEL_KEYSPD, &val);
+
+    pthread_mutex_unlock(&g_rig_mutex);
+
+    if (retcode != RIG_OK) {
+        DEBUG_PRINT("radio_set_keyer_speed: %s\n", rigerror(retcode));
+        return -999;
+    }
+
+    return 0;
+}

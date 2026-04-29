@@ -387,7 +387,19 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
     if (key == '8'&& !in_set_mode) {
         char buffer[64];
         if (is_shifted && !is_hold){
-            speech_say_text("shift 8");
+            int speed = radio_get_keyer_speed();
+            char buffer[64];
+
+            if (speed > 0) {
+                snprintf(buffer, sizeof(buffer),
+                        "Keyer speed %d words per minute", speed);
+            } else {
+                snprintf(buffer, sizeof(buffer),
+                        "Keyer speed not available");
+            }
+
+            speech_say_text(buffer);
+            return true;
         }
         else if (is_hold) {
             // [8] Hold - Mic Gain query

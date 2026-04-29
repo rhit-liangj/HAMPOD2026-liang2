@@ -135,4 +135,6 @@ int radio_get_antenna(void);
 float radio_get_swr(void);
 
 int radio_toggle_data_mode(void);
+
+int radio_get_keyer_speed(void);
 #endif // RADIO_QUERIES_H

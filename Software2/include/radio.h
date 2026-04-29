@@ -12,7 +12,7 @@
 
 #ifndef RADIO_H
 #define RADIO_H
-
+#include <hamlib/rig.h>
 #include <stdbool.h>
 
 // ============================================================================
