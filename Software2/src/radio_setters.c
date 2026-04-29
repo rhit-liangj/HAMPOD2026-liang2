@@ -766,7 +766,7 @@ int radio_set_keyer_speed(int wpm) {
     memset(&val, 0, sizeof(val));
     val.i = wpm;
 
-    int retcode = rig_set_level(g_rig, RIG_VFO_CURR, RIG_LEVEL_KEYSPD, &val);
+    int retcode = rig_set_level(g_rig, RIG_VFO_CURR, RIG_LEVEL_KEYSPD, val);
 
     pthread_mutex_unlock(&g_rig_mutex);
 
