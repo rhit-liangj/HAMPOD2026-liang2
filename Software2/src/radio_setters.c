@@ -642,6 +642,7 @@ int radio_set_mode_by_index(int mode_index) {
     return 0;
 }
 
+
 int radio_set_tuning_step(int step_hz) {
     pthread_mutex_lock(&g_rig_mutex);
 
@@ -777,3 +778,4 @@ int radio_set_keyer_speed(int wpm) {
 
     return 0;
 }
+

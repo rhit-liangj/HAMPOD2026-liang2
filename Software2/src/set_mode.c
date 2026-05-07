@@ -558,8 +558,6 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         
         // [Shift]+[9] - Compression
         if (key == '9' && !is_hold && is_shifted  ) {
-            // add speech debug
-            speech_say_text("test shift nine in set");
             return select_parameter(SET_PARAM_COMPRESSION);
         }
         
