@@ -615,6 +615,19 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     // =========================================================================
     
     if (g_state == SET_MODE_EDITING) {
+        // Mode-specific: [0] cycles mode
+        if (g_current_param == SET_PARAM_MODE && key == '0' && !is_hold) {
+            if (radio_cycle_mode() == 0) {
+                const char* mode = radio_get_mode_string();
+                speech_say_text(mode);
+            } else {
+                if (config_get_key_beep_enabled()) {
+                    comm_play_beep(COMM_BEEP_ERROR);
+                }
+                speech_say_text("Failed");
+            }
+            return true;
+}
         // Digits - accumulate value
         if (isdigit(key)) {
             add_digit(key);
