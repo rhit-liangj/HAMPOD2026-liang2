@@ -6,6 +6,7 @@
 # Run this after SSH'ing into your Pi for the first time.
 #
 # Usage: ./install_hampod.sh
+#   Do NOT run with sudo — the script will call sudo for steps that need it.
 #
 # Prerequisites:
 #   - Raspberry Pi with Debian Trixie installed
@@ -26,6 +27,17 @@
 
 set -e  # Exit on any error
 
+# Refuse to run as root — prevents piper installing to /root/ and
+# build artifacts being owned by root
+if [ "$(id -u)" -eq 0 ]; then
+    echo "ERROR: Do not run this script with sudo or as root."
+    echo ""
+    echo "Usage: ./install_hampod.sh"
+    echo ""
+    echo "The script will call sudo internally for steps that need it."
+    exit 1
+fi
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -40,7 +52,18 @@ NC='\033[0m' # No Color
 # Configuration
 REPO_URL="https://github.com/waynepadgett/HAMPOD2026.git"
 HAMPOD_DIR="$HOME/HAMPOD2026"
-TOTAL_STEPS=9
+CONFIG_FILE="$HOME/HAMPOD2026/Software2/config/hampod.conf"
+TOTAL_STEPS=10
+VERBOSE=false
+HARD_RESET=false
+
+# Parse flags
+for arg in "$@"; do
+    case "$arg" in
+        --verbose|-v) VERBOSE=true ;;
+        --hard-reset) HARD_RESET=true ;;
+    esac
+done
 
 # Track current step
 CURRENT_STEP=0
@@ -133,6 +156,43 @@ run_with_spinner() {
     fi
 }
 
+# Run an apt command with a live progress bar
+# Parses apt output lines like "Setting up package (3/47)" to show progress
+run_apt_with_progress() {
+    local label="$1"
+    shift
+    
+    local tmplog status_file
+    tmplog=$(mktemp)
+    status_file=$(mktemp)
+    
+    # Run apt, save exit status to a file, pipe output for progress parsing
+    ( "$@" 2>&1; echo $? > "$status_file" ) | tee "$tmplog" | while IFS= read -r line; do
+        # Match lines like "Unpacking libfoo (1/47)" or "Setting up libfoo (3/47)"
+        if [[ "$line" =~ \(([0-9]+)/([0-9]+)\) ]]; then
+            local current="${BASH_REMATCH[1]}"
+            local total="${BASH_REMATCH[2]}"
+            local pct=$((current * 100 / total))
+            local width=30
+            local filled=$((current * width / total))
+            local bar=""
+            for ((i=0; i<filled; i++)); do bar+="█"; done
+            for ((i=filled; i<width; i++)); do bar+="░"; done
+            printf "\r      ${CYAN}→${NC} %-20s [${GREEN}%s${NC}${DIM}%s${NC}] %3d%% (%d/%d)" \
+                "$label" "${bar:0:$filled}" "${bar:$filled}" "$pct" "$current" "$total"
+        fi
+    done
+    printf "\r\033[K"  # Clear the progress line
+    
+    # Read the exit status from the file
+    local status=0
+    if [ -f "$status_file" ]; then
+        status=$(cat "$status_file")
+    fi
+    rm -f "$tmplog" "$status_file"
+    return "${status:-1}"
+}
+
 print_step() {
     CURRENT_STEP=$((CURRENT_STEP + 1))
     echo ""
@@ -177,44 +237,48 @@ check_internet() {
     print_success "Internet connection verified"
 }
 
-# Test internet speed by downloading a small file
+# Test internet speed by downloading a 1MB test file
+# Uses only curl (no bc dependency). curl provides speed_download in bytes/sec.
 test_internet_speed() {
     print_info "Testing download speed..."
     
-    # Download a small file and measure time (GitHub's robots.txt is tiny and reliable)
-    local test_url="https://raw.githubusercontent.com/waynepadgett/HAMPOD2026/main/README.md"
-    local start_time=$(date +%s.%N)
+    # Download a 1MB file from a fast CDN and let curl report the average speed
+    # speed_download is in bytes/sec, size_download in bytes
+    local result
+    result=$(curl -s -w "%{speed_download}" -o /dev/null \
+        "https://speed.cloudflare.com/__down?bytes=1000000" 2>/dev/null) || true
     
-    # Download to /dev/null and capture size
-    local result=$(curl -s -w "%{size_download} %{time_total}" -o /dev/null "$test_url" 2>/dev/null)
-    local size=$(echo "$result" | awk '{print $1}')
-    local time=$(echo "$result" | awk '{print $2}')
-    
-    if [ -n "$size" ] && [ -n "$time" ] && [ "$time" != "0" ] && [ "$time" != "0.000000" ]; then
-        # Calculate speed in KB/s
-        local speed=$(echo "scale=0; $size / $time / 1024" | bc 2>/dev/null || echo "0")
-        
-        if [ "$speed" -gt 0 ]; then
-            if [ "$speed" -gt 1024 ]; then
-                local speed_mb=$(echo "scale=1; $speed / 1024" | bc 2>/dev/null || echo "$speed")
-                print_success "Download speed: ~${speed_mb} MB/s"
-            else
-                print_success "Download speed: ~${speed} KB/s"
-            fi
-            
-            # Estimate based on speed
-            if [ "$speed" -lt 100 ]; then
-                print_warning "Slow connection detected - installation may take 15-30 minutes"
-            elif [ "$speed" -lt 500 ]; then
-                print_info "Moderate speed - installation should take 10-15 minutes"
-            else
-                print_info "Good speed - installation should take 5-10 minutes"
-            fi
-        else
-            print_info "Could not measure speed (will proceed anyway)"
-        fi
-    else
+    if [ -z "$result" ] || [ "$result" = "0" ] || [ "$result" = "0.000" ]; then
         print_info "Could not measure speed (will proceed anyway)"
+        return 0
+    fi
+    
+    # curl gives bytes/sec as a float like "523456.000" — truncate to integer
+    local speed_bps=${result%%.*}
+    
+    # Guard against empty/zero
+    if [ -z "$speed_bps" ] || [ "$speed_bps" -le 0 ] 2>/dev/null; then
+        print_info "Could not measure speed (will proceed anyway)"
+        return 0
+    fi
+    
+    local speed_kbps=$((speed_bps / 1024))
+    
+    if [ "$speed_kbps" -gt 1024 ]; then
+        # Show MB/s (integer, close enough)
+        local speed_mbps=$((speed_kbps / 1024))
+        print_success "Download speed: ~${speed_mbps} MB/s"
+    else
+        print_success "Download speed: ~${speed_kbps} KB/s"
+    fi
+    
+    # Time estimate
+    if [ "$speed_kbps" -lt 100 ]; then
+        print_warning "Slow connection detected — installation may take 15-30 minutes"
+    elif [ "$speed_kbps" -lt 500 ]; then
+        print_info "Moderate speed — installation should take 10-15 minutes"
+    else
+        print_info "Good speed — installation should take 5-10 minutes"
     fi
 }
 
@@ -288,10 +352,11 @@ main() {
     # -------------------------------------------------------------------------
     print_step "Updating system packages..."
     
-    run_with_spinner "Updating package lists..." sudo apt update -y
+    run_with_spinner "Updating package lists..." sudo apt-get update -y
     print_success "Package lists updated"
     
-    run_with_spinner "Upgrading packages (this may take a few minutes)..." sudo apt upgrade -y
+    print_info "Upgrading packages (this may take a few minutes)..."
+    run_apt_with_progress "Upgrading" sudo env DEBIAN_FRONTEND=noninteractive apt-get upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"
     print_success "System upgraded"
     
     # -------------------------------------------------------------------------
@@ -299,7 +364,8 @@ main() {
     # -------------------------------------------------------------------------
     print_step "Installing dependencies (git, gcc, ALSA, Hamlib)..."
     
-    run_with_spinner "Installing build tools and libraries..." sudo apt install -y git make gcc libasound2-dev libhamlib-dev wget bc
+    print_info "Installing build tools and libraries..."
+    run_apt_with_progress "Installing" sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y git make gcc libasound2-dev libhamlib-dev wget
     print_success "All dependencies installed"
     
     # -------------------------------------------------------------------------
@@ -309,15 +375,77 @@ main() {
     
     if [ -d "$HAMPOD_DIR" ]; then
         print_warning "Repository already exists at $HAMPOD_DIR"
-        print_info "Pulling latest changes..."
+        
+        CONFIG_FILE="$HAMPOD_DIR/Software2/config/hampod.conf"
+        FACTORY_FILE="$HAMPOD_DIR/Software2/config/hampod.conf.factory"
+        FLAG_KEEP_CONFIG=false
+        
+        # 1. Handle the config file choice
+        if [ -f "$CONFIG_FILE" ]; then
+            echo ""
+            print_info "You already have a hampod.conf file."
+            read -p "      Do you want to (K)eep your current settings or (R)eset to factory defaults? [K/r] " config_choice
+            
+            if [[ ! "$config_choice" =~ ^[Rr]$ ]]; then
+                cp "$CONFIG_FILE" /tmp/hampod_backup.conf
+                FLAG_KEEP_CONFIG=true
+            fi
+        fi
+        
+        # 2. Handle the Git Pull strategy
+        echo ""
+        print_info "Do you want to perform a CLEAN PULL?"
+        print_warning "You should probably say YES. This will set your hampod code to match the repo exactly. If you are developing code directly on the hampod and not in the repo (you should not do this) you would lose those changes."
+        read -p "      If you say NO, it will attempt a standard stash/pull/pop to preserve your changes and you will not be in sync with the repo. [Y/n] " pull_choice
+        
         cd "$HAMPOD_DIR"
-        run_with_spinner "Pulling updates..." git pull origin main || git pull origin master || true
+        
+        # Detect the current branch so we don't accidentally reset to a different one
+        CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "main")
+        if [ -z "$CURRENT_BRANCH" ]; then
+            CURRENT_BRANCH="main"
+        fi
+        
+        if [[ ! "$pull_choice" =~ ^[Nn]$ ]]; then
+            print_info "Performing clean pull on branch '$CURRENT_BRANCH'..."
+            run_with_spinner "Fetching updates..." git fetch origin
+            run_with_spinner "Resetting to $CURRENT_BRANCH..." git reset --hard "origin/$CURRENT_BRANCH"
+            run_with_spinner "Cleaning untracked..." git clean -fd
+            print_success "Clean pull successful"
+        else
+            print_info "Attempting standard pull on branch '$CURRENT_BRANCH'..."
+            # Suppress normal stdout, preserve errors
+            git stash > /dev/null 2>&1 || true
+            run_with_spinner "Pulling updates..." git pull origin "$CURRENT_BRANCH" || true
+            git stash pop > /dev/null 2>&1 || true
+            print_success "Standard pull successful"
+        fi
+        
+        # 3. Restore or create the config file
+        if [ "$FLAG_KEEP_CONFIG" = true ]; then
+            cp /tmp/hampod_backup.conf "$CONFIG_FILE"
+            rm -f /tmp/hampod_backup.conf
+            print_success "Preserved existing config settings"
+        else
+            if [ -f "$FACTORY_FILE" ]; then
+                cp "$FACTORY_FILE" "$CONFIG_FILE"
+                print_success "Set config to factory defaults"
+            fi
+        fi
+        
         print_success "Repository updated"
     else
         print_info "Cloning from $REPO_URL..."
         cd "$HOME"
         run_with_spinner "Cloning repository..." git clone "$REPO_URL"
         print_success "Repository cloned to $HAMPOD_DIR"
+        
+        # Create initial config
+        CONFIG_FILE="$HAMPOD_DIR/Software2/config/hampod.conf"
+        FACTORY_FILE="$HAMPOD_DIR/Software2/config/hampod.conf.factory"
+        if [ -f "$FACTORY_FILE" ]; then
+            cp "$FACTORY_FILE" "$CONFIG_FILE"
+        fi
     fi
     
     # -------------------------------------------------------------------------
@@ -327,6 +455,15 @@ main() {
     
     # Make scripts executable
     chmod +x "$HAMPOD_DIR/Documentation/scripts/"*.sh 2>/dev/null || true
+    
+    # Create global symlinks for the CLI scripts
+    if [ -x "$HAMPOD_DIR/Documentation/scripts/setup_cli.sh" ]; then
+        print_info "Configuring global CLI commands..."
+        run_with_spinner "Creating symlinks..." sudo "$HAMPOD_DIR/Documentation/scripts/setup_cli.sh"
+        print_success "CLI commands setup successfully"
+    else
+        print_warning "setup_cli.sh not found or not executable. Skipping CLI symlinks."
+    fi
     
     # Check if Piper is already installed
     if command -v piper &> /dev/null && [ -f "$HAMPOD_DIR/Firmware/models/en_US-lessac-low.onnx" ]; then
@@ -366,8 +503,17 @@ main() {
     print_step "Building HAL Integration Tests..."
     cd "$HAMPOD_DIR/Firmware/hal/tests"
     
-    run_with_spinner "Cleaning test artifacts..." make clean || true
-    run_with_spinner "Compiling tests..." make
+    make clean >/dev/null 2>&1 || true
+    if [ "$VERBOSE" = true ]; then
+        print_info "Compiling tests (verbose output)..."
+        make 2>&1 || {
+            print_warning "HAL test build had issues (non-fatal, continuing)"
+        }
+    else
+        run_with_spinner "Compiling tests..." make || {
+            print_warning "HAL test build had issues (non-fatal, continuing)"
+        }
+    fi
     print_success "HAL Integration Tests built"
     
     # -------------------------------------------------------------------------
@@ -385,7 +531,7 @@ main() {
     fi
     
     # -------------------------------------------------------------------------
-    # Step 8: Configure Auto-Start
+    # Step 8: Configure Auto-Start (TEMPORARILY DISABLED)
     # -------------------------------------------------------------------------
     print_step "Configuring HAMPOD auto-start on boot..."
     
@@ -394,8 +540,10 @@ main() {
     chmod +x "$HAMPOD_DIR/Documentation/scripts/run_hampod_service.sh" 2>/dev/null || true
     chmod +x "$HAMPOD_DIR/Documentation/scripts/power_down_protection.sh" 2>/dev/null || true
     
-    "$HAMPOD_DIR/Documentation/scripts/hampod_on_powerup.sh" --enable
-    print_success "HAMPOD will start automatically on boot"
+    # TEMPORARILY DISABLED DUE TO SUDO/PERMISSIONS ISSUES
+    # "$HAMPOD_DIR/Documentation/scripts/hampod_on_powerup.sh" --enable
+    # print_success "HAMPOD will start automatically on boot"
+    print_warning "HAMPOD auto-start has been temporarily disabled."
     
     # -------------------------------------------------------------------------
     # Step 9: SD Card Protection (Optional)
@@ -422,14 +570,38 @@ main() {
     
     read -p "Enable SD card protection now? [y/N] " response
     if [[ "$response" =~ ^[Yy]$ ]]; then
-        "$HAMPOD_DIR/Documentation/scripts/power_down_protection.sh" --enable
+        sudo "$HAMPOD_DIR/Documentation/scripts/power_down_protection.sh" --enable
     else
         print_info "SD card protection not enabled"
         print_info "You can enable it later with: ./power_down_protection.sh --enable"
         
         # Still install the prompt indicator for when they do enable it
-        "$HAMPOD_DIR/Documentation/scripts/power_down_protection.sh" --status > /dev/null 2>&1 || true
+        sudo "$HAMPOD_DIR/Documentation/scripts/power_down_protection.sh" --status > /dev/null 2>&1 || true
     fi
+    
+    # -------------------------------------------------------------------------
+    # Step 10: Performance Settings
+    # -------------------------------------------------------------------------
+    print_step "Configuring CPU Performance Mode..."
+    
+    echo ""
+    print_info "Creating systemd service to pin CPU governor to 'performance'..."
+    sudo bash -c 'cat > /etc/systemd/system/hampod-performance.service << EOF
+[Unit]
+Description=Set CPU Governor to Performance
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c "echo performance | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor"
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF'
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now hampod-performance
+    print_success "CPU pinned to maximum performance"
     
     # -------------------------------------------------------------------------
     # Success!

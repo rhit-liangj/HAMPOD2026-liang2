@@ -7,26 +7,48 @@
 #   - Builds Firmware and Software2 (if needed)
 #   - Starts both components and leaves them running
 #
-# Usage: ./run_hampod.sh [--no-build]
+# Usage: ./run_hampod.sh [--no-build] [--debug]
 #   --no-build: Skip the build step (faster startup if already built)
+#   --debug:    Enable verbose hamlib debugging output
 #
 # To stop: Press Ctrl+C
 #
 # =============================================================================
 
+# Refuse to run as root — causes permission issues with log files and builds
+if [ "$(id -u)" -eq 0 ]; then
+    echo "ERROR: Do not run this script with sudo or as root."
+    echo ""
+    echo "Usage: ./run_hampod.sh [--no-build] [--debug]"
+    echo ""
+    echo "The script will call sudo internally for steps that need it."
+    exit 1
+fi
+
 set -e  # Exit on error during setup
 
 # Configuration
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Resolve symlink so we can run from anywhere via /usr/local/bin/run_hampod
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+  DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 FIRMWARE_DIR="$REPO_ROOT/Firmware"
 SOFTWARE2_DIR="$REPO_ROOT/Software2"
 SKIP_BUILD=false
 
 # Parse arguments
-if [ "$1" = "--no-build" ]; then
-    SKIP_BUILD=true
-fi
+for arg in "$@"; do
+    if [ "$arg" = "--no-build" ]; then
+        SKIP_BUILD=true
+    elif [ "$arg" = "--debug" ]; then
+        DEBUG_MODE=true
+    fi
+done
 
 # Colors for output
 RED='\033[0;31m'
@@ -59,6 +81,8 @@ echo -e "${YELLOW}[Step 2/5] Cleaning up stale pipes...${NC}"
 sudo rm -f "$FIRMWARE_DIR/Firmware_i" "$FIRMWARE_DIR/Firmware_o" 2>/dev/null || true
 sudo rm -f "$FIRMWARE_DIR/Speaker_i" "$FIRMWARE_DIR/Speaker_o" 2>/dev/null || true
 sudo rm -f "$FIRMWARE_DIR/Keypad_i" "$FIRMWARE_DIR/Keypad_o" 2>/dev/null || true
+# Clean up log files that may be owned by root from previous sudo runs
+sudo rm -f /tmp/firmware.log /tmp/hampod_output.txt /tmp/hampod_debug.log 2>/dev/null || true
 echo "  Done."
 
 # -----------------------------------------------------------------------------
@@ -71,7 +95,7 @@ else
     
     cd "$FIRMWARE_DIR"
     echo "  Building Firmware..."
-    make clean > /dev/null 2>&1 || true
+    sudo make clean > /dev/null 2>&1 || true
     make > /dev/null 2>&1
     if [ ! -f "firmware.elf" ]; then
         echo -e "${RED}  ERROR: Firmware build failed${NC}"
@@ -81,7 +105,7 @@ else
     
     cd "$SOFTWARE2_DIR"
     echo "  Building Software2..."
-    make clean > /dev/null 2>&1 || true
+    sudo make clean > /dev/null 2>&1 || true
     make > /dev/null 2>&1
     if [ ! -f "bin/hampod" ]; then
         echo -e "${RED}  ERROR: Software2 build failed${NC}"
@@ -95,7 +119,21 @@ fi
 # -----------------------------------------------------------------------------
 echo -e "${YELLOW}[Step 4/5] Starting Firmware...${NC}"
 cd "$FIRMWARE_DIR"
-sudo ./firmware.elf > /tmp/firmware.log 2>&1 &
+
+# Read keypad layout from config file
+FIRMWARE_ARGS=""
+CONF_FILE="$SOFTWARE2_DIR/config/hampod.conf"
+if [ -f "$CONF_FILE" ]; then
+    LAYOUT=$(grep -A10 '^\[keypad\]' "$CONF_FILE" | grep '^layout' | head -1 | cut -d'=' -f2 | sed 's/#.*//' | tr -d ' ')
+    if [ "$LAYOUT" = "phone" ]; then
+        FIRMWARE_ARGS="--phone-layout"
+        echo -e "  Keypad layout: ${GREEN}phone${NC} (positional)"
+    else
+        echo "  Keypad layout: calculator (default)"
+    fi
+fi
+
+sudo ./firmware.elf $FIRMWARE_ARGS > /tmp/firmware.log 2>&1 &
 FIRMWARE_PID=$!
 echo "  Firmware PID: $FIRMWARE_PID"
 
@@ -146,4 +184,9 @@ cleanup() {
 trap cleanup EXIT
 
 # Run hampod interactively
-sudo ./bin/hampod 2>&1 | tee /tmp/hampod_output.txt
+HAMPOD_ARGS=""
+if [ "$DEBUG_MODE" = true ]; then
+    HAMPOD_ARGS="--debug"
+fi
+
+sudo ./bin/hampod $HAMPOD_ARGS 2>&1 | tee /tmp/hampod_output.txt
