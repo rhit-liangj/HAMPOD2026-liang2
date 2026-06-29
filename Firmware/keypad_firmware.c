@@ -130,7 +130,7 @@ void keypad_process() {
         read_value = '-'; // No key pressed
       }
 
-      KEYPAD_PRINTF("[LATENCY][KEYPAD] HAL read time: %.3f ms\n",
+      KEYPAD_PRINTF("[LATENCY][KEYPAD] HAL read time: %.3f ms\n",read_value,
                     elapsed_ms(t_keypad_start, t_keypad_after_read));
     }
 
@@ -143,7 +143,7 @@ void keypad_process() {
 
     clock_gettime(CLOCK_MONOTONIC, &t_keypad_after_write);
 
-    KEYPAD_PRINTF("[LATENCY][KEYPAD] Firmware request-to-response time: %.3f ms\n",
+    KEYPAD_PRINTF("[LATENCY][KEYPAD] Firmware request-to-response time: %.3f ms\n", read_value,
                   elapsed_ms(t_keypad_start, t_keypad_after_write));
 
     destroy_inst_packet(&packet_to_send);
