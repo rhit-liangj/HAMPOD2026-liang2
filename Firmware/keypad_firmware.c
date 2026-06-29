@@ -22,7 +22,8 @@
 #include "keypad_firmware.h"
 
 extern pid_t controller_pid;
-
+struct timespec start;
+struct timespec end;
 
 unsigned char keypad_running = 1;
 
@@ -35,6 +36,8 @@ static double elapsed_ms(struct timespec start, struct timespec end) {
 void *keypad_io_thread(void *arg);
 
 // Debug print statements from this process are White (\033[0;m)
+clock_gettime(CLOCK_MONOTONIC, &start);
+
 void keypad_process() {
 
   KEYPAD_PRINTF("Keypad reader process launched\n");
@@ -46,7 +49,13 @@ void keypad_process() {
   } else {
     KEYPAD_PRINTF("Keypad HAL initialized: %s\n", hal_keypad_get_impl_name());
   }
-
+  clock_gettime(CLOCK_MONOTONIC, &end);
+  printf("Elapsed = %.3f ms\n",
+       elapsed_ms(start, end));
+  KEYPAD_PRINTF(
+                "[LATENCY][KEYPAD] Key '%c' HAL read: %.3f ms\n",
+                read_value,
+                elapsed_ms(t_keypad_start, t_keypad_after_read));
   KEYPAD_PRINTF("Connecting to input/output pipes\n");
 
   int input_pipe_fd = open(KEYPAD_I, O_RDONLY);
