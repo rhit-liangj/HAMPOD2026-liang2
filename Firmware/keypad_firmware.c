@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "hal/hal_keypad.h"
 #include "hampod_firm_packet.h"
@@ -21,11 +22,15 @@
 
 extern pid_t controller_pid;
 
+
 unsigned char keypad_running = 1;
 
 pthread_mutex_t keypad_queue_lock;
 pthread_mutex_t keypad_queue_available;
-
+static double elapsed_ms(struct timespec start, struct timespec end) {
+  return (end.tv_sec - start.tv_sec) * 1000.0 +
+         (end.tv_nsec - start.tv_nsec) / 1000000.0;
+}
 void *keypad_io_thread(void *arg);
 
 // Debug print statements from this process are White (\033[0;m)
@@ -106,14 +111,27 @@ void keypad_process() {
     pthread_mutex_unlock(&keypad_queue_available);
 
     char read_value = -1;
+
+    struct timespec t_keypad_start;
+    struct timespec t_keypad_after_read;
+    struct timespec t_keypad_after_write;
+
     if (received_packet->data[0] == 'r') {
+      clock_gettime(CLOCK_MONOTONIC, &t_keypad_start);
+
       // Use HAL to read keypad
       KeypadEvent event = hal_keypad_read();
+
+      clock_gettime(CLOCK_MONOTONIC, &t_keypad_after_read);
+
       if (event.valid) {
         read_value = event.key;
       } else {
         read_value = '-'; // No key pressed
       }
+
+      KEYPAD_PRINTF("[LATENCY][KEYPAD] HAL read time: %.3f ms\n",
+                    elapsed_ms(t_keypad_start, t_keypad_after_read));
     }
 
     Inst_packet *packet_to_send = create_inst_packet(
@@ -122,6 +140,11 @@ void keypad_process() {
                   (char)read_value);
     write(output_pipe_fd, packet_to_send, 8);
     write(output_pipe_fd, packet_to_send->data, 1);
+
+    clock_gettime(CLOCK_MONOTONIC, &t_keypad_after_write);
+
+    KEYPAD_PRINTF("[LATENCY][KEYPAD] Firmware request-to-response time: %.3f ms\n",
+                  elapsed_ms(t_keypad_start, t_keypad_after_write));
 
     destroy_inst_packet(&packet_to_send);
   }
