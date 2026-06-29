@@ -55,7 +55,7 @@ void keypad_process() {
        elapsed_ms(start, end));
   KEYPAD_PRINTF(
                 "[LATENCY][KEYPAD] Key '%c' HAL read: %.3f ms\n",
-                elapsed_ms(t_keypad_start, t_keypad_after_read));
+                elapsed_ms(start, end));
   KEYPAD_PRINTF("Connecting to input/output pipes\n");
 
   int input_pipe_fd = open(KEYPAD_I, O_RDONLY);
