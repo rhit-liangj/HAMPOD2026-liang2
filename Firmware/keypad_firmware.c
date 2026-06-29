@@ -165,7 +165,8 @@ while (keypad_running) {
     if (key_pressed) {
 
         clock_gettime(CLOCK_MONOTONIC, &t_keypad_after_write);
-
+        KEYPAD_PRINTF("[LATENCY][KEYPAD] intializationtime: %.3f ms\n",
+              elapsed_ms(start, end));
         KEYPAD_PRINTF(
             "[LATENCY][KEYPAD] Key '%c' Total firmware latency: %.3f ms\n",
             read_value,
