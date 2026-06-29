@@ -22,8 +22,6 @@
 #include "keypad_firmware.h"
 
 extern pid_t controller_pid;
-struct timespec start;
-struct timespec end;
 
 unsigned char keypad_running = 1;
 
@@ -36,9 +34,12 @@ static double elapsed_ms(struct timespec start, struct timespec end) {
 void *keypad_io_thread(void *arg);
 
 // Debug print statements from this process are White (\033[0;m)
-clock_gettime(CLOCK_MONOTONIC, &start);
+
 
 void keypad_process() {
+  struct timespec start;
+  struct timespec end;
+  clock_gettime(CLOCK_MONOTONIC, &start);
 
   KEYPAD_PRINTF("Keypad reader process launched\n");
 
