@@ -97,57 +97,74 @@ void keypad_process() {
     exit(1);
   }
   usleep(500000); // Half sec sleep to let child thread take control
-  while (keypad_running) {
+while (keypad_running) {
     pthread_mutex_lock(&keypad_queue_available);
     pthread_mutex_lock(&keypad_queue_lock);
+
     if (is_empty(input_queue)) {
-      pthread_mutex_unlock(&keypad_queue_available);
-      pthread_mutex_unlock(&keypad_queue_lock);
-      usleep(500);
-      continue;
+        pthread_mutex_unlock(&keypad_queue_available);
+        pthread_mutex_unlock(&keypad_queue_lock);
+        usleep(500);
+        continue;
     }
+
     Inst_packet *received_packet = dequeue(input_queue);
+
     pthread_mutex_unlock(&keypad_queue_lock);
     pthread_mutex_unlock(&keypad_queue_available);
 
-    char read_value = -1;
+    char read_value = '-';
+    bool key_pressed = false;
 
     struct timespec t_keypad_start;
     struct timespec t_keypad_after_read;
     struct timespec t_keypad_after_write;
 
     if (received_packet->data[0] == 'r') {
-      clock_gettime(CLOCK_MONOTONIC, &t_keypad_start);
 
-      // Use HAL to read keypad
-      KeypadEvent event = hal_keypad_read();
+        clock_gettime(CLOCK_MONOTONIC, &t_keypad_start);
 
-      clock_gettime(CLOCK_MONOTONIC, &t_keypad_after_read);
+        // Read keypad
+        KeypadEvent event = hal_keypad_read();
 
-      if (event.valid) {
-        read_value = event.key;
-      } else {
-        read_value = '-'; // No key pressed
-      }
+        clock_gettime(CLOCK_MONOTONIC, &t_keypad_after_read);
 
-      KEYPAD_PRINTF("[LATENCY][KEYPAD] HAL read time: %.3f ms\n",read_value,
-                    elapsed_ms(t_keypad_start, t_keypad_after_read));
+        if (event.valid) {
+
+            key_pressed = true;
+            read_value = event.key;
+
+            KEYPAD_PRINTF(
+                "[LATENCY][KEYPAD] Key '%c' HAL read: %.3f ms\n",
+                read_value,
+                elapsed_ms(t_keypad_start, t_keypad_after_read));
+        }
     }
 
-    Inst_packet *packet_to_send = create_inst_packet(
-        KEYPAD, 1, (unsigned char *)&read_value, received_packet->tag);
-    KEYPAD_PRINTF("Sending back value of %x ('%c')\n", read_value,
+    Inst_packet *packet_to_send =
+        create_inst_packet(KEYPAD, 1,
+                           (unsigned char *)&read_value,
+                           received_packet->tag);
+
+    KEYPAD_PRINTF("Sending back value of %x ('%c')\n",
+                  read_value,
                   (char)read_value);
+
     write(output_pipe_fd, packet_to_send, 8);
     write(output_pipe_fd, packet_to_send->data, 1);
 
-    clock_gettime(CLOCK_MONOTONIC, &t_keypad_after_write);
+    if (key_pressed) {
 
-    KEYPAD_PRINTF("[LATENCY][KEYPAD] Firmware request-to-response time: %.3f ms\n", read_value,
-                  elapsed_ms(t_keypad_start, t_keypad_after_write));
+        clock_gettime(CLOCK_MONOTONIC, &t_keypad_after_write);
+
+        KEYPAD_PRINTF(
+            "[LATENCY][KEYPAD] Key '%c' Total firmware latency: %.3f ms\n",
+            read_value,
+            elapsed_ms(t_keypad_start, t_keypad_after_write));
+    }
 
     destroy_inst_packet(&packet_to_send);
-  }
+}
   pthread_join(keypad_io_buffer, NULL);
   destroy_queue(input_queue);
   close(input_pipe_fd);
