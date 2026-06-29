@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <time.h>
+#include <stdbool.h>
 
 #include "hal/hal_keypad.h"
 #include "hampod_firm_packet.h"
