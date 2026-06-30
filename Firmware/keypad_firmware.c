@@ -145,9 +145,9 @@ while (keypad_running) {
             read_value = event.key;
 
             KEYPAD_PRINTF(
-                "[LATENCY][KEYPAD] Key '%c' HAL read: %.3f ms\n",
+                "[LATENCY][KEYPAD] Key '%c' HAL read: %.3f ns\n",
                 read_value,
-                elapsed_ms(t_keypad_start, t_keypad_after_read));
+                elapsed_ns(t_keypad_start, t_keypad_after_read));
         }
     }
 
