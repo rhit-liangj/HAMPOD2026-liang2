@@ -27,9 +27,10 @@ unsigned char keypad_running = 1;
 
 pthread_mutex_t keypad_queue_lock;
 pthread_mutex_t keypad_queue_available;
-static double elapsed_ms(struct timespec start, struct timespec end) {
-  return (end.tv_sec - start.tv_sec) * 1000.0 +
-         (end.tv_nsec - start.tv_nsec) / 1000000.0;
+static int64_t elapsed_ns(struct timespec start, struct timespec end)
+{
+    return (end.tv_sec - start.tv_sec) * 1000000000LL +
+           (end.tv_nsec - start.tv_nsec);
 }
 void *keypad_io_thread(void *arg);
 

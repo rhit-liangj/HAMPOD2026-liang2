@@ -16,13 +16,18 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 
 // ============================================================================
 // Module State
 // ============================================================================
 
 static bool g_verbosity_enabled = true;  // Auto-announcements on by default
-
+static double elapsed_ms(struct timespec start, struct timespec end)
+{
+    return (end.tv_sec - start.tv_sec) * 1000.0 +
+           (end.tv_nsec - start.tv_nsec) / 1000000.0;
+}
 
 // ============================================================================
 // Internal Helpers
@@ -132,9 +137,9 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
     }
     // [1] - VFO selection
     if (key == '1'&& !in_set_mode) { // added not in set mode condition, only execute this when not in set mode
+        struct timespec start, end;
         if(is_shifted && !is_hold){
-        int vox = radio_get_vox_status();
-
+        int vox = radio_get_vox_status();        
         if (vox < 0) {
             speech_say_text("VOX status unavailable, shift one pressed");
             } else if (vox == 1) {
@@ -142,6 +147,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
             } else {
             speech_say_text("VOX is off");
             }
+            clock_gettime(CLOCK_MONOTONIC, &end);
         }
         else if(is_shifted && is_hold ){ 
         // shift + hold → break-in status
