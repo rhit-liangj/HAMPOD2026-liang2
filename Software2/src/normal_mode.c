@@ -141,14 +141,14 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         clock_gettime(CLOCK_MONOTONIC, &start);
         if(is_shifted && !is_hold){
         int vox = radio_get_vox_status();     
-        
+        clock_gettime(CLOCK_MONOTONIC, &end);
         printf("[LATENCY][PRESS1][VOX_STATUS] Key-to-radio-response: %.3f ms\n",
                elapsed_ms(start, end));
-        if (vox < 0) {
+        if (vox < 0) {            
+            speech_say_text("VOX status unavailable, shift one pressed");
             clock_gettime(CLOCK_MONOTONIC, &end);
             printf("[LATENCY][PRESS1][VOX_STATUS] Key-to-radio-response: %.3f ms\n",
                elapsed_ms(start, end));
-            speech_say_text("VOX status unavailable, shift one pressed");
             } else if (vox == 1) {
             speech_say_text("VOX is now on");
             } else {
