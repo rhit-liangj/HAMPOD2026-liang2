@@ -147,7 +147,6 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         fflush(stdout);
         if (vox < 0) {            
             speech_say_text("VOX status unavailable, shift one pressed");
-            fflush(stdout);
             } else if (vox == 1) {
             speech_say_text("VOX is now on");
             } else {
@@ -161,6 +160,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
             clock_gettime(CLOCK_MONOTONIC, &end);
             printf("[LATENCY][PRESS1][BREAK_IN_STATUS] Key-to-radio-response: %.3f ms\n",
                elapsed_ms(start, end));
+               fflush(stdout);
             if (break_in < 0) {
                 speech_say_text("Break in status unavailable");
             } 
@@ -183,6 +183,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
             clock_gettime(CLOCK_MONOTONIC, &end);
             printf("[LATENCY][PRESS1][VFO_A] Key-to-radio-response: %.3f ms\n",
                elapsed_ms(start, end));
+            fflush(stdout);
             if (radio_set_vfo(RADIO_VFO_A) == 0) {
                 speech_say_text("VFO A");
                 announce_frequency();
@@ -195,6 +196,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
             clock_gettime(CLOCK_MONOTONIC, &end);
             printf("[LATENCY][PRESS1][VFO_B] Key-to-radio-response: %.3f ms\n",
                elapsed_ms(start, end));
+            fflush(stdout);
             if (radio_set_vfo(RADIO_VFO_B) == 0) {
                 speech_say_text("VFO B");
                 announce_frequency();
@@ -215,6 +217,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
             clock_gettime(CLOCK_MONOTONIC, &end);
             printf("[LATENCY][PRESS2][TUNING_STEP] Key-to-radio-response: %.3f ms\n",
                elapsed_ms(start, end));
+            fflush(stdout);
             if(ts < 0){
                 speech_say_text("tunning step unavailable");
             }else if (ts >= 1000) {
@@ -242,6 +245,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
             clock_gettime(CLOCK_MONOTONIC, &end);
             printf("[LATENCY][PRESS2][MEMORY_SCAN] Key-to-radio-response: %.3f ms\n",
                elapsed_ms(start, end));
+            fflush(stdout);
             if(scan < 0){
                 speech_say_text("memory scan unavailable");
             }else if(scan == 1){
@@ -261,7 +265,10 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         else if(!is_hold){
             //press 3 toggle split mode
             int split = radio_toggle_split_mode();
-
+            clock_gettime(CLOCK_MONOTONIC, &end);
+            printf("[LATENCY][PRESS3][SPLIT_MODE] Key-to-radio-response: %.3f ms\n",
+               elapsed_ms(start, end));
+            fflush(stdout);
             if (split < 0) {
                 speech_say_text("Split mode unavailable");
             } else if (split == 1) {
@@ -273,6 +280,10 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         else{
             //hold 3 Exchange VFO A and VFO b
             int exchange = radio_exchange_vfo();
+            clock_gettime(CLOCK_MONOTONIC, &end);
+            printf("[LATENCY][PRESS3][EXCHANGE_VFO] Key-to-radio-response: %.3f ms\n",
+               elapsed_ms(start, end));
+            fflush(stdout);
             if (exchange < 0){
                 speech_say_text("exchange vfo unavailable");
             }else{
@@ -283,10 +294,16 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
     
     // [4] - PreAmp (press) / AGC (hold) / Attenuation (shift+press)
     if (key == '4'&& !in_set_mode) {
+        struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
         char buffer[64];
         if (is_shifted && !is_hold) {
             // [Shift]+[4] - Attenuation query
             int atten = radio_get_attenuation();
+            clock_gettime(CLOCK_MONOTONIC, &end);
+            printf("[LATENCY][PRESS4][ATTENUATION] Key-to-radio-response: %.3f ms\n",
+               elapsed_ms(start, end));
+            fflush(stdout);
             if (atten == 0) {
                 snprintf(buffer, sizeof(buffer), "Attenuation off");
             } else if (atten > 0) {
@@ -304,6 +321,10 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         } else {
             // [4] Press - PreAmp query
             int preamp = radio_get_preamp();
+            clock_gettime(CLOCK_MONOTONIC, &end);
+            printf("[LATENCY][PRESS4][PRE_AMP] Key-to-radio-response: %.3f ms\n",
+               elapsed_ms(start, end));
+            fflush(stdout);
             if (preamp == 0) {
                 snprintf(buffer, sizeof(buffer), "Pre amp off");
             } else if (preamp > 0) {
