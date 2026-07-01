@@ -138,8 +138,12 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
     // [1] - VFO selection
     if (key == '1'&& !in_set_mode) { // added not in set mode condition, only execute this when not in set mode
         struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
         if(is_shifted && !is_hold){
-        int vox = radio_get_vox_status();        
+        int vox = radio_get_vox_status();     
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS1][VOX_STATUS] Key-to-radio-response: %.3f ms\n",
+               elapsed_ms(start, end));
         if (vox < 0) {
             speech_say_text("VOX status unavailable, shift one pressed");
             } else if (vox == 1) {
@@ -152,7 +156,9 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         else if(is_shifted && is_hold ){ 
         // shift + hold → break-in status
             int break_in = radio_get_break_in_status();
-
+            clock_gettime(CLOCK_MONOTONIC, &end);
+            printf("[LATENCY][PRESS1][BREAK_IN_STATUS] Key-to-radio-response: %.3f ms\n",
+               elapsed_ms(start, end));
             if (break_in < 0) {
                 speech_say_text("Break in status unavailable");
             } 
@@ -171,6 +177,10 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
             // Select VFO A
             // Suppress polling announcement since we'll announce ourselves
             frequency_mode_suppress_next_poll();
+
+            clock_gettime(CLOCK_MONOTONIC, &end);
+            printf("[LATENCY][PRESS1][VFO_A] Key-to-radio-response: %.3f ms\n",
+               elapsed_ms(start, end));
             if (radio_set_vfo(RADIO_VFO_A) == 0) {
                 speech_say_text("VFO A");
                 announce_frequency();
@@ -180,6 +190,9 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         } else {
             // Select VFO B
             frequency_mode_suppress_next_poll();
+            clock_gettime(CLOCK_MONOTONIC, &end);
+            printf("[LATENCY][PRESS1][VFO_B] Key-to-radio-response: %.3f ms\n",
+               elapsed_ms(start, end));
             if (radio_set_vfo(RADIO_VFO_B) == 0) {
                 speech_say_text("VFO B");
                 announce_frequency();
@@ -192,9 +205,14 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
     
     // [2] - Announce current frequency
     if (key == '2' && !in_set_mode){
+        struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
         if(is_shifted && !is_hold){
             //shift 2 tunning step status
             int ts = radio_get_tuning_step();
+            clock_gettime(CLOCK_MONOTONIC, &end);
+            printf("[LATENCY][PRESS2][TUNING_STEP] Key-to-radio-response: %.3f ms\n",
+               elapsed_ms(start, end));
             if(ts < 0){
                 speech_say_text("tunning step unavailable");
             }else if (ts >= 1000) {
@@ -219,17 +237,22 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         else{
             // hold 2 toggle memory scan
             int scan = radio_toggle_memory_scan();
+            clock_gettime(CLOCK_MONOTONIC, &end);
+            printf("[LATENCY][PRESS2][MEMORY_SCAN] Key-to-radio-response: %.3f ms\n",
+               elapsed_ms(start, end));
             if(scan < 0){
                 speech_say_text("memory scan unavailable");
             }else if(scan == 1){
                 speech_say_text("memory scan on");
             }else{
-                speech_say_text("memory scan diabled");
+                speech_say_text("memory scan disabled");
             }
         }
     }
     // [3] 
     if (key == '3' && !in_set_mode){
+        struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
         if(is_shifted && !is_hold){
             //shift 3 Choose Duplex direction
         }
