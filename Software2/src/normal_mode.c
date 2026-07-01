@@ -108,13 +108,20 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
     DEBUG_PRINT("normal_mode_handle_key: key='%c' hold=%d shift=%d\n", key, is_hold, is_shifted);
     // [0] - Announce current mode
     if (key == '0' && !in_set_mode) {
+        struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
         if(!is_hold && !is_shifted){
         const char* mode = radio_get_mode_string();
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS0][MODE] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
         speech_say_text(mode);
         return true;
         }
         else if(is_shifted && !is_hold){
             float swr = radio_get_swr();
+            struct timespec start, end;
+            clock_gettime(CLOCK_MONOTONIC, &start);
             char buffer[64];
 
             if (swr > 0.0f) {
@@ -129,6 +136,9 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         else if(!is_shifted && is_hold){
             if (radio_toggle_data_mode() == 0) {
                 const char* mode = radio_get_mode_string();
+                clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS0][MODE] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
                 speech_say_text(mode);
             } else {
                 speech_say_text("Failed");
@@ -316,6 +326,10 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         } else if (is_hold) {
             // [4] Hold - AGC query
             snprintf(buffer, sizeof(buffer), "A G C %s", radio_get_agc_string());
+            clock_gettime(CLOCK_MONOTONIC, &end);
+            printf("[LATENCY][PRESS4][AGC] Key-to-radio-response: %.3f ms\n",
+               elapsed_ms(start, end));
+            fflush(stdout);
             speech_say_text(buffer);
             return true;
         } else {
@@ -338,6 +352,8 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
     }
     // [5] 
     if(key == '5' && !in_set_mode){
+        struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
         if(is_shifted && !is_hold){
             speech_say_text("shift five");
         }
@@ -351,11 +367,15 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
 
     // [6]
     if (key == '6'&& !in_set_mode) {
+        struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
         if (is_shifted && !is_hold) {
             // shift + press 6 -> get filter number
             int filter = radio_get_filter_number();
             char msg[32];
-
+            clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS6][FilterNumber] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
             if (filter == -999) {
                 speech_say_text("Filter number unavailable");
             } else {
@@ -366,7 +386,9 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         else if (!is_shifted && is_hold) {
             // hold 6 -> audio peaking filter
             int status = radio_get_apf_status();
-
+            clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS6][APF_STATUS] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
             if (status == -999) {
                 speech_say_text("Audio peaking filter unavailable");
             } else if (status) {
@@ -379,7 +401,9 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
             // press 6 -> read filter width
             int width = radio_get_filter_width();
             char msg[64];
-
+            clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS6][FILTER_WIDTH] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
             if (width == -999) {
                 speech_say_text("Filter width unavailable");
             }
@@ -398,8 +422,13 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
     }
     // [7] - Noise Blanker query
     if (key == '7' && !in_set_mode){
+        struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
         if(is_shifted && !is_hold){//shift 7, attenna selection status
             int ant = radio_get_antenna();
+            clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS7][ANTENNA_STATUS] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
             char buffer[64];
 
             if (ant > 0) {
@@ -415,6 +444,9 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
             char buffer[64];
             bool nb_on = radio_get_nb_enabled();
             int nb_level = radio_get_nb_level();
+            clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS7][NOISE_BLANKER] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
             snprintf(buffer, sizeof(buffer), "Noise blanker %s, level %d", 
                     nb_on ? "on" : "off", nb_level >= 0 ? nb_level : 0);
             speech_say_text(buffer);
@@ -422,6 +454,9 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         }
         else{// attena tuner status
             int tuner = radio_get_tuner_status();
+            clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS7][TUNER_STATUS] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
             char buffer[64];
 
             if (tuner >= 0) {
@@ -437,9 +472,14 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
     
     // [8] - Noise Reduction (press) / Mic Gain (hold)
     if (key == '8'&& !in_set_mode) {
+        struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
         char buffer[64];
         if (is_shifted && !is_hold){
             int speed = radio_get_keyer_speed();
+            clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS8][KEYER_SPEED] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
             char buffer[64];
 
             if (speed > 0) {
@@ -456,6 +496,9 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         else if (is_hold) {
             // [8] Hold - Mic Gain query
             int mic = radio_get_mic_gain();
+            clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS8][MIC_GAIN] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
             if (mic >= 0) {
                 snprintf(buffer, sizeof(buffer), "Mic gain %d percent", mic);
             } else {
@@ -467,6 +510,9 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
             // [8] Press - Noise Reduction query
             bool nr_on = radio_get_nr_enabled();
             int nr_level = radio_get_nr_level();
+            clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS8][NOISE_REDUCTION] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
             snprintf(buffer, sizeof(buffer), "Noise reduction %s, level %d",
                      nr_on ? "on" : "off", nr_level >= 0 ? nr_level : 0);
             speech_say_text(buffer);
@@ -476,10 +522,15 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
     
     // [9] - Compression (shift+press) / Power (hold)
     if (key == '9' && !in_set_mode) {
+        struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
         char buffer[64];
         if (is_shifted && !is_hold /*&& not in set mode idle*/) {
             // [Shift]+[9] - Compression query
             int comp = radio_get_compression();
+            clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS9][COMPRESSION] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
             bool comp_on = radio_get_compression_enabled();
             if (comp >= 0) {
                 snprintf(buffer, sizeof(buffer), "Compression %s, level %d",
@@ -492,6 +543,9 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         } else if (is_hold) {
             // [9] Hold - Power level query
             int power = radio_get_power();
+            clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS9][POWER] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
             if (power >= 0) {
                 snprintf(buffer, sizeof(buffer), "Power %d percent", power);
             } else {
@@ -505,16 +559,26 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
     
     // [*] - S-meter (press) / Power meter (hold)
     if (key == '*') {
+        struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
         if (!is_hold) {
             announce_smeter();
+            clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS*][S_METER] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
         } else {
             announce_power_meter();
+            clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS*][POWER_METER] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
         }
         return true;
     }
     
     // [C] - Toggle verbosity (press) / Config mode entry (hold, not implemented)
     if (key == 'C' && !is_hold) {
+        struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
         g_verbosity_enabled = !g_verbosity_enabled;
         if (g_verbosity_enabled) {
             speech_say_text("Announcements on");
