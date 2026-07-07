@@ -191,7 +191,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
             frequency_mode_suppress_next_poll();
 
             clock_gettime(CLOCK_MONOTONIC, &end);
-            printf("[LATENCY][PRESS1][VFO_A] Key-to-radio-response: %.3f ms\n",
+            printf("[LATENCY][PRESS1][VFO_A] Key-to-radio-response: %.6f ms\n",
                elapsed_ms(start, end));
             fflush(stdout);
             if (radio_set_vfo(RADIO_VFO_A) == 0) {
@@ -204,7 +204,7 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
             // Select VFO B
             frequency_mode_suppress_next_poll();
             clock_gettime(CLOCK_MONOTONIC, &end);
-            printf("[LATENCY][PRESS1][VFO_B] Key-to-radio-response: %.3f ms\n",
+            printf("[LATENCY][PRESS1][VFO_B] Key-to-radio-response: %.6f ms\n",
                elapsed_ms(start, end));
             fflush(stdout);
             if (radio_set_vfo(RADIO_VFO_B) == 0) {
