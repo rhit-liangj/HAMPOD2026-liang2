@@ -18,6 +18,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <time.h>
 
 // ============================================================================
 // Module State
