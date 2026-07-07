@@ -217,7 +217,13 @@ static void apply_value(void) {
     switch (g_current_param) {
         case SET_PARAM_POWER:
             if (value >= 0 && value <= 100) {
+                struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
                 result = radio_set_power(value);
+                clock_gettime(CLOCK_MONOTONIC, &end);
+                printf("[LATENCY][Power] Key-to-radio-response: %.3f ms\n",
+               elapsed_ms(start, end));
+            fflush(stdout);
                 if (result == 0) {
                     snprintf(buffer, sizeof(buffer), "Power set to %d", value);
                 }
@@ -226,7 +232,13 @@ static void apply_value(void) {
             
         case SET_PARAM_MIC_GAIN:
             if (value >= 0 && value <= 100) {
+                struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
                 result = radio_set_mic_gain(value);
+                clock_gettime(CLOCK_MONOTONIC, &end);
+                printf("[LATENCY][MicGain] Key-to-radio-response: %.3f ms\n",
+               elapsed_ms(start, end));
+            fflush(stdout);
                 if (result == 0) {
                     snprintf(buffer, sizeof(buffer), "Mic gain set to %d", value);
                 }
@@ -235,7 +247,13 @@ static void apply_value(void) {
             
         case SET_PARAM_COMPRESSION:
             if (value >= 0 && value <= 100) {
+                struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
                 result = radio_set_compression(value);
+                clock_gettime(CLOCK_MONOTONIC, &end);
+                printf("[LATENCY][Compression] Key-to-radio-response: %.3f ms\n",
+               elapsed_ms(start, end));
+            fflush(stdout);
                 if (result == 0) {
                     snprintf(buffer, sizeof(buffer), "Compression set to %d", value);
                 }
@@ -244,7 +262,13 @@ static void apply_value(void) {
             
         case SET_PARAM_NB:
             if (value >= 0 && value <= 10) {
+                struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
                 result = radio_set_nb(true, value);
+                clock_gettime(CLOCK_MONOTONIC, &end);
+                printf("[LATENCY][NoiseBlanker] Key-to-radio-response: %.3f ms\n",
+               elapsed_ms(start, end));
+            fflush(stdout);
                 if (result == 0) {
                     snprintf(buffer, sizeof(buffer), "Noise blanker level %d", value);
                 }
@@ -253,7 +277,13 @@ static void apply_value(void) {
             
         case SET_PARAM_NR:
             if (value >= 0 && value <= 10) {
+                struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
                 result = radio_set_nr(true, value);
+                clock_gettime(CLOCK_MONOTONIC, &end);
+                printf("[LATENCY][NoiseReduction] Key-to-radio-response: %.3f ms\n",
+               elapsed_ms(start, end));
+            fflush(stdout);
                 if (result == 0) {
                     snprintf(buffer, sizeof(buffer), "Noise reduction level %d", value);
                 }
@@ -262,7 +292,13 @@ static void apply_value(void) {
             
         case SET_PARAM_PREAMP:
             if (value >= 0 && value <= 2) {
+                struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
                 result = radio_set_preamp(value);
+                clock_gettime(CLOCK_MONOTONIC, &end);
+                printf("[LATENCY][Preamp] Key-to-radio-response: %.3f ms\n",
+               elapsed_ms(start, end));
+            fflush(stdout);
                 if (result == 0) {
                     if (value == 0) {
                         snprintf(buffer, sizeof(buffer), "Pre amp off");
@@ -285,7 +321,13 @@ static void apply_value(void) {
             break;
         case SET_PARAM_TUNING_STEP:
             if (value > 0) {
+                struct timespec start, end;
+                clock_gettime(CLOCK_MONOTONIC, &start);
                 result = radio_set_tuning_step(value);
+                clock_gettime(CLOCK_MONOTONIC, &end);
+                printf("[LATENCY][TuningStep] Key-to-radio-response: %.3f ms\n",
+                       elapsed_ms(start, end));
+                fflush(stdout);
                 if (result == 0) {
                     snprintf(buffer, sizeof(buffer), "Tuning step set to %d hertz", value);
                 }
@@ -301,7 +343,13 @@ static void apply_value(void) {
             break;
         case SET_PARAM_FILTER_NUMBER:
             if (value >= 1 && value <= 3) {
+                struct timespec start, end;
+                clock_gettime(CLOCK_MONOTONIC, &start);
                 result = radio_set_filter_number(value);
+                clock_gettime(CLOCK_MONOTONIC, &end);
+                printf("[LATENCY][FilterNumber] Key-to-radio-response: %.3f ms\n",
+                       elapsed_ms(start, end));
+                fflush(stdout);
                 if (result == 0) {
                     snprintf(buffer, sizeof(buffer), "Filter %d", value);
                 }
@@ -309,7 +357,13 @@ static void apply_value(void) {
             break;
         case SET_PARAM_KEYER_SPEED:
             if (value > 0) {
+                struct timespec start, end;
+                clock_gettime(CLOCK_MONOTONIC, &start);
                 result = radio_set_keyer_speed(value);
+                clock_gettime(CLOCK_MONOTONIC, &end);
+                printf("[LATENCY][KeyerSpeed] Key-to-radio-response: %.3f ms\n",
+                       elapsed_ms(start, end));
+                fflush(stdout);
                 if (result == 0) {
                     snprintf(buffer, sizeof(buffer),
                             "Keyer speed set to %d", value);
