@@ -483,7 +483,7 @@ int radio_set_preamp(int level) {
     if (level <= 0) {
         val.i = 0;
     } else {
-        val.i = 10;   // IC-7300 Preamp ON / Preamp 1
+        val.i = 1;   // IC-7300 Preamp ON / Preamp 1
     }
 
     printf("[DEBUG] radio_set_preamp level=%d, sending val.i=%d\n",
