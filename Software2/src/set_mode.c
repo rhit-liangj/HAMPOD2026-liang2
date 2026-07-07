@@ -35,6 +35,11 @@ static int g_value_len = 0;
 // ============================================================================
 // Internal Helpers
 // ============================================================================
+static double elapsed_ms(struct timespec start, struct timespec end)
+{
+    return (end.tv_sec - start.tv_sec) * 1000.0 +
+           (end.tv_nsec - start.tv_nsec) / 1000000.0;
+}
 
 static void clear_value_buffer(void) {
     g_value_buffer[0] = '\0';
@@ -566,8 +571,7 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         clock_gettime(CLOCK_MONOTONIC, &start);
             return select_parameter(SET_PARAM_MIC_GAIN);
             clock_gettime(CLOCK_MONOTONIC, &end);
-        printf("[LATENCY][PRESS8][MicGain] Key-to-radio-response: %.3f ms\n",
-        elapsed_ms(start, end));
+        printf("[LATENCY][PRESS8][MicGain] Key-to-radio-response: %.3f ms\n", elapsed_ms(start, end));
         fflush(stdout);
         }
         
