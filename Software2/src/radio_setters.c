@@ -509,6 +509,9 @@ int radio_get_preamp(void) {
 
     value_t val;
     int retcode = rig_get_level(g_rig, RIG_VFO_CURR, RIG_LEVEL_PREAMP, &val);
+    printf("[DEBUG] radio_get_preamp retcode=%d, val.i=%d, val.f=%f\n",
+       retcode, val.i, val.f);
+fflush(stdout);
 
     pthread_mutex_unlock(&g_rig_mutex);
 
