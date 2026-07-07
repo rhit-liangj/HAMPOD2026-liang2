@@ -478,17 +478,9 @@ int radio_set_preamp(int level) {
         return -1;
     }
 
-    value_t val;
+    int status = (level > 0) ? 1 : 0;
 
-    if (level <= 0) {
-        val.i = 0;
-    } else if (level == 1) {
-        val.i = 10;
-    } else {
-        val.i = 20;
-    }
-
-    int retcode = rig_set_level(g_rig, RIG_VFO_CURR, RIG_LEVEL_PREAMP, val);
+    int retcode = rig_set_func(g_rig, RIG_VFO_CURR, RIG_FUNC_PREAMP, status);
 
     pthread_mutex_unlock(&g_rig_mutex);
 
@@ -499,6 +491,7 @@ int radio_set_preamp(int level) {
 
     return 0;
 }
+
 int radio_get_preamp(void) {
     pthread_mutex_lock(&g_rig_mutex);
 
