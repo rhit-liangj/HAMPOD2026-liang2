@@ -678,6 +678,10 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
         if (key == '#' && !is_hold) {
             if (g_value_len > 0) {
                 apply_value();
+                clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS8][MicGain] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
+        fflush(stdout);
             } else {
                 // No value entered, treat as "Done/Exit" per spec
                 set_mode_exit();

@@ -470,52 +470,62 @@ const char* radio_get_agc_string(void) {
 // Preamp and Attenuation
 // ============================================================================
 
-int radio_set_preamp(int state) {
+int radio_set_preamp(int level) {
     pthread_mutex_lock(&g_rig_mutex);
-    
+
     if (!g_connected || !g_rig) {
         pthread_mutex_unlock(&g_rig_mutex);
         return -1;
     }
-    
-    // Hamlib preamp is typically 0=off, 10=preamp1, 20=preamp2 (dB values)
-    // But many radios just use 0, 1, 2 indices
+
     value_t val;
-    val.i = state * 10;  // Convert 0/1/2 to 0/10/20
-    
+
+    if (level <= 0) {
+        val.i = 0;
+    } else if (level == 1) {
+        val.i = 10;
+    } else {
+        val.i = 20;
+    }
+
     int retcode = rig_set_level(g_rig, RIG_VFO_CURR, RIG_LEVEL_PREAMP, val);
-    
+
     pthread_mutex_unlock(&g_rig_mutex);
-    
+
     if (retcode != RIG_OK) {
         DEBUG_PRINT("radio_set_preamp: %s\n", rigerror(retcode));
         return -1;
     }
-    
-    DEBUG_PRINT("radio_set_preamp: %d\n", state);
+
     return 0;
 }
-
 int radio_get_preamp(void) {
     pthread_mutex_lock(&g_rig_mutex);
-    
+
     if (!g_connected || !g_rig) {
         pthread_mutex_unlock(&g_rig_mutex);
         return -1;
     }
-    
+
     value_t val;
     int retcode = rig_get_level(g_rig, RIG_VFO_CURR, RIG_LEVEL_PREAMP, &val);
-    
+
     pthread_mutex_unlock(&g_rig_mutex);
-    
+
     if (retcode != RIG_OK) {
         DEBUG_PRINT("radio_get_preamp: %s\n", rigerror(retcode));
         return -1;
     }
-    
-    // Convert dB back to 0/1/2
-    return val.i / 10;
+
+    DEBUG_PRINT("radio_get_preamp raw value: val.i = %d\n", val.i);
+
+    if (val.i <= 0) {
+        return 0;   // preamp off
+    } else if (val.i <= 10) {
+        return 1;   // preamp level 1
+    } else {
+        return 2;   // preamp level 2
+    }
 }
 
 int radio_set_attenuation(int db) {
