@@ -544,65 +544,100 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     
     if (g_state == SET_MODE_IDLE) { 
         if (key == '9' && is_hold && !is_shifted) {
+            struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
             return select_parameter(SET_PARAM_POWER);
         }
         //shift 8 keyer speed
         if(key == '8' && !is_hold && is_shifted){
+            struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
             return select_parameter(SET_PARAM_KEYER_SPEED);
+            clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS8][KEYER_SPEED] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
+        fflush(stdout);
         }
         
         // [8] Hold - Mic Gain
         if (key == '8' && is_hold && !is_shifted) {
+            struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
             return select_parameter(SET_PARAM_MIC_GAIN);
+            clock_gettime(CLOCK_MONOTONIC, &end);
+        printf("[LATENCY][PRESS8][MicGain] Key-to-radio-response: %.3f ms\n",
+        elapsed_ms(start, end));
+        fflush(stdout);
         }
         
         // [Shift]+[9] - Compression
         if (key == '9' && !is_hold && is_shifted  ) {
+            struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
             return select_parameter(SET_PARAM_COMPRESSION);
         }
         
         // [7] - Noise Blanker
         if (key == '7' && !is_hold && !is_shifted) {
+            struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
             return select_parameter(SET_PARAM_NB);
         }
         // [6] - filter number
         if (key == '6' && !is_hold && is_shifted) {
+            struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
             return select_parameter(SET_PARAM_FILTER_NUMBER);
         }
         // [8] - Noise Reduction
         if (key == '8' && !is_hold && !is_shifted) {
+            struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
             return select_parameter(SET_PARAM_NR);
         }
         
         // [4] Hold - AGC
         if (key == '4' && is_hold && !is_shifted) {
+            struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
             return select_parameter(SET_PARAM_AGC);
         }
         
         // [4] - PreAmp
         if (key == '4' && !is_hold && !is_shifted) {
+            struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
             return select_parameter(SET_PARAM_PREAMP);
         }
         
         // [Shift]+[4] - Attenuation
         if (key == '4' && !is_hold && is_shifted) {
+            struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
             return select_parameter(SET_PARAM_ATTENUATION);
         }
         
         // [0] - Mode
         if (key == '0' && !is_hold && !is_shifted) {
+            struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
             return select_parameter(SET_PARAM_MODE);
         }
         // [Shift]+[2] - Tuning Step
         if (key == '2' && !is_hold && !is_shifted) {
+            struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
             return select_parameter(SET_PARAM_TUNING_STEP);
         }
         
+
         if (key == '1' && !is_hold && !is_shifted) {
             speech_say_text("set one pressed"); 
         }
         //shift 1 VOX status
         if(key == '1' && !is_hold && is_shifted){
+            struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
             return select_parameter(SET_PARAM_VOX);
         }
         // Consume but ignore other keys in idle state
@@ -615,6 +650,8 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
     // =========================================================================
     
     if (g_state == SET_MODE_EDITING) {
+        struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start);
         // Mode-specific: [0] cycles mode
         if (g_current_param == SET_PARAM_MODE && key == '0' && !is_hold) {
             if (radio_cycle_mode() == 0) {
