@@ -624,9 +624,6 @@ bool set_mode_handle_key(char key, bool is_hold, bool is_shifted) {
             struct timespec start, end;
         clock_gettime(CLOCK_MONOTONIC, &start);
             return select_parameter(SET_PARAM_MIC_GAIN);
-            clock_gettime(CLOCK_MONOTONIC, &end);
-        printf("[LATENCY][PRESS8][MicGain] Key-to-radio-response: %.3f ms\n", elapsed_ms(start, end));
-        fflush(stdout);
         }
         
         // [Shift]+[9] - Compression
