@@ -482,10 +482,8 @@ int radio_set_preamp(int level) {
 
     if (level <= 0) {
         val.i = 0;
-    } else if (level == 1) {
-        val.i = 10;
     } else {
-        val.i = 20;
+        val.i = 10;   // IC-7300 Preamp ON / Preamp 1
     }
 
     printf("[DEBUG] radio_set_preamp level=%d, sending val.i=%d\n",
@@ -500,11 +498,7 @@ int radio_set_preamp(int level) {
            retcode, rigerror(retcode));
     fflush(stdout);
 
-    if (retcode != RIG_OK) {
-        return -1;
-    }
-
-    return 0;
+    return retcode == RIG_OK ? 0 : -1;
 }
 
 int radio_get_preamp(void) {
