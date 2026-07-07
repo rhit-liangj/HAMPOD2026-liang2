@@ -526,7 +526,7 @@ fflush(stdout);
 
     if (val.i <= 0) {
         return 0;   // preamp off
-    } else if (val.i <= 10) {
+    } else if (val.i <= 1) {
         return 1;   // preamp level 1
     } else {
         return 2;   // preamp level 2
