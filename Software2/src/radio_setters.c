@@ -478,14 +478,29 @@ int radio_set_preamp(int level) {
         return -1;
     }
 
-    int status = (level > 0) ? 1 : 0;
+    value_t val;
 
-    int retcode = rig_set_func(g_rig, RIG_VFO_CURR, RIG_FUNC_PREAMP, status);
+    if (level <= 0) {
+        val.i = 0;
+    } else if (level == 1) {
+        val.i = 10;
+    } else {
+        val.i = 20;
+    }
+
+    printf("[DEBUG] radio_set_preamp level=%d, sending val.i=%d\n",
+           level, val.i);
+    fflush(stdout);
+
+    int retcode = rig_set_level(g_rig, RIG_VFO_CURR, RIG_LEVEL_PREAMP, val);
 
     pthread_mutex_unlock(&g_rig_mutex);
 
+    printf("[DEBUG] radio_set_preamp retcode=%d, error=%s\n",
+           retcode, rigerror(retcode));
+    fflush(stdout);
+
     if (retcode != RIG_OK) {
-        DEBUG_PRINT("radio_set_preamp: %s\n", rigerror(retcode));
         return -1;
     }
 
