@@ -23,7 +23,11 @@
 extern RIG *g_rig;
 extern bool g_connected;
 extern pthread_mutex_t g_rig_mutex;
-
+static double elapsed_ms(struct timespec start, struct timespec end)
+{
+    return (end.tv_sec - start.tv_sec) * 1000.0 +
+           (end.tv_nsec - start.tv_nsec) / 1000000.0;
+}
 // ============================================================================
 // Mode Operations
 // ============================================================================
