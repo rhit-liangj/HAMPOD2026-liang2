@@ -78,7 +78,6 @@ const char* radio_get_mode_string(void) {
     int retcode = rig_get_mode(g_rig, RIG_VFO_CURR, &mode, &width);
     printf("[LATENCY][Modefunction] Key-to-radio-response: %.3f ms\n",
     elapsed_ms(start, end));
-    fflush(stdout);
     pthread_mutex_unlock(&g_rig_mutex);
     
     if (retcode != RIG_OK) {
