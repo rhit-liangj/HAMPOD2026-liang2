@@ -65,8 +65,7 @@ static const char* mode_to_string(rmode_t mode) {
 
 const char* radio_get_mode_string(void) {
     pthread_mutex_lock(&g_rig_mutex);
-    struct timespec start, end;
-    clock_gettime(CLOCK_MONOTONIC, &start);
+    
     if (!g_connected || !g_rig) {
         pthread_mutex_unlock(&g_rig_mutex);
         return "Not connected";
@@ -74,6 +73,8 @@ const char* radio_get_mode_string(void) {
     
     rmode_t mode;
     pbwidth_t width;
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
     int retcode = rig_get_mode(g_rig, RIG_VFO_CURR, &mode, &width);
     printf("[LATENCY][Modefunction] Key-to-radio-response: %.3f ms\n",
     elapsed_ms(start, end));
