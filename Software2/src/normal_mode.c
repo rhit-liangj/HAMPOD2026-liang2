@@ -190,11 +190,11 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
             // Suppress polling announcement since we'll announce ourselves
             frequency_mode_suppress_next_poll();
 
-            clock_gettime(CLOCK_MONOTONIC, &end);
+            if (radio_set_vfo(RADIO_VFO_A) == 0) {
+                clock_gettime(CLOCK_MONOTONIC, &end);
             printf("[LATENCY][PRESS1][VFO_A] Key-to-radio-response: %.6f ms\n",
                elapsed_ms(start, end));
             fflush(stdout);
-            if (radio_set_vfo(RADIO_VFO_A) == 0) {
                 speech_say_text("VFO A");
                 announce_frequency();
             } else {
@@ -203,11 +203,11 @@ bool normal_mode_handle_key(char key, bool is_hold, bool is_shifted, bool in_set
         } else {
             // Select VFO B
             frequency_mode_suppress_next_poll();
-            clock_gettime(CLOCK_MONOTONIC, &end);
-            printf("[LATENCY][PRESS1][VFO_B] Key-to-radio-response: %.6f ms\n",
-               elapsed_ms(start, end));
-            fflush(stdout);
             if (radio_set_vfo(RADIO_VFO_B) == 0) {
+                clock_gettime(CLOCK_MONOTONIC, &end);
+                printf("[LATENCY][PRESS1][VFO_B] Key-to-radio-response: %.6f ms\n",
+                   elapsed_ms(start, end));
+                fflush(stdout);
                 speech_say_text("VFO B");
                 announce_frequency();
             } else {
